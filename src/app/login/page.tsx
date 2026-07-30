@@ -313,7 +313,7 @@ function LoginPageClient() {
           {shouldAskUsername && (
             <div className='group'>
               <label htmlFor='username' className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2'>
-                NameID:
+                Username:
               </label>
               <div className='relative'>
                 <div className='absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none'>
