@@ -306,7 +306,7 @@ function LoginPageClient() {
   <h1 className='text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 tracking-tight text-2xl sm:text-3xl font-extrabold mb-1.5 drop-shadow-sm'>
     {siteName}
   </h1>
-  <p className='text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium'>欢迎回来，请登录您的账户</p>
+  <a href="https://400821.xyz" target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 text-sm transition-colors"返回红月搜索</a>
 </div>
 
         <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6'>
