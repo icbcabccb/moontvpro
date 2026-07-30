@@ -49,13 +49,13 @@ function VersionDisplay() {
           {updateStatus === UpdateStatus.HAS_UPDATE && (
             <>
               <AlertCircle className='w-3.5 h-3.5' />
-              <span className='font-semibold text-xs'>有新版本</span>
+              <span className='font-semibold text-xs'>Update</span>
             </>
           )}
           {updateStatus === UpdateStatus.NO_UPDATE && (
             <>
               <CheckCircle className='w-3.5 h-3.5' />
-              <span className='font-semibold text-xs'>已是最新</span>
+              <span className='font-semibold text-xs'>Latest version</span>
             </>
           )}
         </div>
@@ -117,9 +117,9 @@ function RegisterPageClient() {
         }
         
         // 如果是管理员关闭了注册
-        if (data.error === '管理员已关闭用户注册功能') {
+        if (data.error === 'The administrator has disabled user registration.') {
           setRegistrationDisabled(true);
-          setDisabledReason('管理员已关闭用户注册功能');
+          setDisabledReason('The administrator has disabled user registration.');
           setShouldShowRegister(true);
           return;
         }
@@ -141,12 +141,12 @@ function RegisterPageClient() {
     setSuccess(null);
 
     if (!username || !password || !confirmPassword) {
-      setError('请填写完整信息');
+      setError('Please fill in all the information completely.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('两次输入的密码不一致');
+      setError('The passwords entered twice do not match.');
       return;
     }
 
@@ -166,7 +166,7 @@ function RegisterPageClient() {
         const data = await res.json();
         // 显示成功消息，稍等一下再跳转
         setError(null);
-        setSuccess('注册成功！正在跳转...');
+        setSuccess('successful！Waiting...');
 
         // Upstash 需要额外延迟等待数据同步
         const delay = data.needDelay ? 2500 : 1500;
@@ -177,10 +177,10 @@ function RegisterPageClient() {
         }, delay);
       } else {
         const data = await res.json();
-        setError(data.error ?? '注册失败');
+        setError(data.error ?? 'Failure');
       }
     } catch (error) {
-      setError('网络错误，请稍后重试');
+      setError('Network error. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -236,22 +236,22 @@ function RegisterPageClient() {
           </div>
           <div className='text-center space-y-6'>
             <h2 className='text-xl font-semibold text-gray-800 dark:text-gray-200'>
-              注册功能暂不可用
+              Sorry, registration is not available yet.
             </h2>
             <div className='p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50'>
               <p className='text-gray-700 dark:text-gray-300 text-sm leading-relaxed'>
-                {disabledReason || '管理员已关闭用户注册功能'}
+                {disabledReason || 'The administrator has disabled user registration.'}
               </p>
             </div>
             <p className='text-gray-500 dark:text-gray-500 text-xs'>
-              如需注册账户，请联系网站管理员
+              To register an account, please contact the website administrator.
             </p>
             <button
               onClick={() => router.push('/login')}
               className='group relative inline-flex w-full justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 py-3.5 text-base font-semibold text-white shadow-lg shadow-green-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/40 hover:-translate-y-0.5 overflow-hidden'
             >
               <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
-              返回登录 →
+              Return to Login →
             </button>
           </div>
         </div>
@@ -308,7 +308,7 @@ function RegisterPageClient() {
         <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-5'>
           <div className='group'>
             <label htmlFor='username' className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              用户名
+              NameID:
             </label>
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
@@ -319,7 +319,7 @@ function RegisterPageClient() {
                 type='text'
                 autoComplete='username'
                 className='block w-full pl-12 pr-4 py-3.5 rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
-                placeholder='3-20位字母数字下划线'
+                placeholder='3-20 alphanumeric characters and underscores.'
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -328,7 +328,7 @@ function RegisterPageClient() {
 
           <div className='group'>
             <label htmlFor='password' className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              密码
+              Password:
             </label>
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
@@ -339,7 +339,7 @@ function RegisterPageClient() {
                 type='password'
                 autoComplete='new-password'
                 className='block w-full pl-12 pr-4 py-3.5 rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
-                placeholder='至少6位字符'
+                placeholder='At least 6 characters'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -348,7 +348,7 @@ function RegisterPageClient() {
 
           <div className='group'>
             <label htmlFor='confirmPassword' className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              确认密码
+              Confirm password
             </label>
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
@@ -359,7 +359,7 @@ function RegisterPageClient() {
                 type='password'
                 autoComplete='new-password'
                 className='block w-full pl-12 pr-4 py-3.5 rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
-                placeholder='再次输入密码'
+                placeholder='Enter the password again'
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -389,19 +389,19 @@ function RegisterPageClient() {
           >
             <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
             <UserPlus className='h-5 w-5' />
-            {loading ? '注册中...' : success ? '注册成功，正在跳转...' : '立即注册'}
+            {loading ? 'Waiting...' : success ? 'Success！，Loading...' : 'Sign up now'}
           </button>
 
           <div className='mt-6 pt-6 border-t border-gray-200 dark:border-gray-700'>
             <p className='text-center text-gray-600 dark:text-gray-400 text-sm mb-3'>
-              已有账户？
+              Already a member？
             </p>
             <a
               href='/login'
               className='group flex items-center justify-center gap-2 w-full px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800/50 text-blue-700 dark:text-blue-400 text-sm font-semibold hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-100'
             >
               <Lock className='w-4 h-4' />
-              <span>立即登录</span>
+              <span>Sign in now</span>
               <span className='inline-block transition-transform group-hover:translate-x-1'>→</span>
             </a>
           </div>
