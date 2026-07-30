@@ -306,14 +306,14 @@ function LoginPageClient() {
   <h1 className='text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 tracking-tight text-2xl sm:text-3xl font-extrabold mb-1.5 drop-shadow-sm'>
     {siteName}
   </h1>
-  <a href="https://400821.xyz" target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 text-sm transition-colors"返回红月搜索</a>
+  <p className='text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium'>Welcome to Redseek!</p>
 </div>
 
         <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6'>
           {shouldAskUsername && (
             <div className='group'>
               <label htmlFor='username' className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2'>
-                用户名
+                NameID:
               </label>
               <div className='relative'>
                 <div className='absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none'>
@@ -324,7 +324,7 @@ function LoginPageClient() {
                   type='text'
                   autoComplete='username'
                   className='block w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:outline-none text-sm sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
-                  placeholder='请输入用户名'
+                  placeholder='Please enter your username or ID.'
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -334,7 +334,7 @@ function LoginPageClient() {
 
           <div className='group'>
             <label htmlFor='password' className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2'>
-              密码
+              Password:
             </label>
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none'>
@@ -345,7 +345,7 @@ function LoginPageClient() {
                 type='password'
                 autoComplete='current-password'
                 className='block w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:outline-none text-sm sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
-                placeholder='请输入访问密码'
+                placeholder='Please enter the password.'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -369,21 +369,21 @@ function LoginPageClient() {
           >
             <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
             <Lock className='h-4 w-4 sm:h-5 sm:w-5' />
-            {loading ? '登录中...' : '立即登录'}
+            {loading ? 'Logging...' : 'Sign in'}
           </button>
 
           {/* 注册链接 - 仅在非 localStorage 模式下显示 */}
           {shouldAskUsername && (
             <div className='mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700'>
               <p className='text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-2.5 sm:mb-3'>
-                还没有账户？
+             
               </p>
               <a
                 href='/register'
                 className='group flex items-center justify-center gap-1.5 sm:gap-2 w-full px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-400 text-xs sm:text-sm font-semibold hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-100'
               >
                 <UserPlus className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
-                <span>立即注册</span>
+                <span>Sign up</span>
                 <span className='inline-block transition-transform group-hover:translate-x-1'>→</span>
               </a>
             </div>
