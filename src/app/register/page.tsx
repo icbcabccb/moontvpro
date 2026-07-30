@@ -302,7 +302,7 @@ function RegisterPageClient() {
           <h1 className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 tracking-tight text-3xl sm:text-4xl font-extrabold mb-2 drop-shadow-sm'>
             {siteName}
           </h1>
-          <p className='text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium'>创建您的新账户</p>
+          <p className='text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium'>Create your ID.</p>
         </div>
 
         <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-5'>
