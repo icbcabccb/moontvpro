@@ -285,15 +285,29 @@ function LoginPageClient() {
         <div className='absolute -bottom-20 -right-20 w-40 h-40 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse' style={{ animationDelay: '1s' }} />
 
         {/* 标题区域 */}
-        <div className='text-center mb-6 sm:mb-8'>
-          <div className='inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mb-3 sm:mb-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/50 dark:shadow-green-500/30'>
-            <Sparkles className='w-6 h-6 sm:w-8 sm:h-8 text-white' />
-          </div>
-          <h1 className='text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 tracking-tight text-3xl sm:text-4xl font-extrabold mb-2 drop-shadow-sm'>
-            {siteName}
-          </h1>
-          <p className='text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium'>欢迎回来，请登录您的账户</p>
-        </div>
+<div className='text-center mb-6 sm:mb-7'>
+  <div className='relative inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 mb-3 rounded-2xl bg-gradient-to-br from-green-500/10 via-emerald-500/15 to-teal-500/10 dark:from-green-500/20 dark:via-emerald-500/25 dark:to-teal-500/20 border border-green-500/30 dark:border-green-400/30 shadow-lg shadow-green-500/15 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:shadow-green-500/25'>
+    {/* 图片 Logo */}
+    <img
+      src="/logo.png"
+      alt={siteName}
+      className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-md"
+      onError={(e) => {
+        // 加载失败时隐藏图片并显示后方 Sparkles 图标
+        e.currentTarget.style.display = 'none';
+        const fallback = e.currentTarget.nextElementSibling;
+        if (fallback) fallback.classList.remove('hidden');
+      }}
+    />
+    {/* 降级图标 */}
+    <Sparkles className='w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400 hidden' />
+  </div>
+
+  <h1 className='text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 tracking-tight text-2xl sm:text-3xl font-extrabold mb-1.5 drop-shadow-sm'>
+    {siteName}
+  </h1>
+  <p className='text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium'>欢迎回来，请登录您的账户</p>
+</div>
 
         <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6'>
           {shouldAskUsername && (
