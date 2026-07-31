@@ -48,8 +48,8 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
       gradient: 'from-blue-500 to-cyan-500',
     },
     {
-      icon: Globe,
-      label: 'Favorites',
+      icon: Favorites,
+      label: '分类',
       href: '/source-browser',
       color: 'text-emerald-500',
       gradient: 'from-emerald-500 to-green-500',
