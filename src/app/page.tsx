@@ -135,7 +135,7 @@ function HomeClient() {
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return '上午好';
+    if (hour < 12) return '早上好';
     if (hour < 18) return '下午好';
     return '晚上好';
   }, []);
@@ -555,10 +555,10 @@ function HomeClient() {
                       {username}
                     </span>
                   )}
-                  <span className='inline-block animate-wave origin-bottom-right'>！</span>
+                  <span className='inline-block animate-wave origin-bottom-right'>👋</span>
                 </h2>
                 <p className='text-sm text-white/90'>
-                  直接在导航栏点击“搜索”剧名，或在“分类”选览影视题材分类，如需其它功能请联系管理员admin@400821.xyz。
+                  发现更多精彩影视内容 ✨
                 </p>
               </div>
 
@@ -1067,16 +1067,16 @@ function HomeClient() {
                     ))}
                 </ScrollableRow>
               </section>
-              
+
               {/* 热门短剧 */}
               <section className='mb-8'>
                 <div className='mb-4 flex items-center justify-between'>
-                  <SectionTitle title="------------" icon={} iconColor="text-orange-500" />
+                  <SectionTitle title="热门短剧" icon={Play} iconColor="text-orange-500" />
                   <Link
                     href='/shortdrama'
                     className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                   >
-                    ------------
+                    查看更多
                     <ChevronRight className='w-4 h-4 ml-1' />
                   </Link>
                 </div>
