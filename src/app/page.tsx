@@ -33,7 +33,6 @@ import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
 import ShortDramaCard from '@/components/ShortDramaCard';
 import SkeletonCard from '@/components/SkeletonCard';
-import { useSite } from '@/components/SiteProvider';
 import { TelegramWelcomeModal } from '@/components/TelegramWelcomeModal';
 import VideoCard from '@/components/VideoCard';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -50,7 +49,6 @@ interface HomeState {
   upcomingReleases: ReleaseCalendarItem[];
   loading: boolean;
   username: string;
-  showAnnouncement: boolean;
 }
 
 type HomeAction =
@@ -64,7 +62,6 @@ type HomeAction =
   | { type: 'SET_UPCOMING_RELEASES'; payload: ReleaseCalendarItem[] }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_USERNAME'; payload: string }
-  | { type: 'SET_SHOW_ANNOUNCEMENT'; payload: boolean }
   | { type: 'UPDATE_HOT_MOVIES'; payload: (prev: DoubanItem[]) => DoubanItem[] }
   | { type: 'UPDATE_HOT_TV_SHOWS'; payload: (prev: DoubanItem[]) => DoubanItem[] }
   | { type: 'UPDATE_HOT_VARIETY_SHOWS'; payload: (prev: DoubanItem[]) => DoubanItem[] }
@@ -93,8 +90,6 @@ const homeReducer = (state: HomeState, action: HomeAction): HomeState => {
       return { ...state, loading: action.payload };
     case 'SET_USERNAME':
       return { ...state, username: action.payload };
-    case 'SET_SHOW_ANNOUNCEMENT':
-      return { ...state, showAnnouncement: action.payload };
     case 'UPDATE_HOT_MOVIES':
       return { ...state, hotMovies: action.payload(state.hotMovies) };
     case 'UPDATE_HOT_TV_SHOWS':
@@ -126,10 +121,7 @@ function HomeClient() {
     upcomingReleases: [],
     loading: true,
     username: '',
-    showAnnouncement: false,
   });
-
-  const { announcement } = useSite();
 
   // 解构状态以便使用
   const {
@@ -143,7 +135,6 @@ function HomeClient() {
     upcomingReleases,
     loading,
     username,
-    showAnnouncement,
   } = state;
 
   // 🚀 Web Worker引用
@@ -190,17 +181,7 @@ function HomeClient() {
         setRequireClearConfirmation(JSON.parse(savedRequireClearConfirmation));
       }
     }
-
-    // 检查公告弹窗状态
-    if (typeof window !== 'undefined' && announcement) {
-      const hasSeenAnnouncement = localStorage.getItem('hasSeenAnnouncement');
-      if (hasSeenAnnouncement !== announcement) {
-        dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: true });
-      } else {
-        dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: Boolean(!hasSeenAnnouncement && announcement) });
-      }
-    }
-  }, [announcement]);
+  }, []);
 
   // 🚀 TanStack Query - 使用 useQuery 获取收藏数据（自动缓存，跨页面持久化）
   const { data: allFavorites = {} } = useQuery({
@@ -602,11 +583,6 @@ function HomeClient() {
     };
   }, [queryClient]); // 依赖 queryClient
 
-  const handleCloseAnnouncement = (announcement: string) => {
-    dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: false });
-    localStorage.setItem('hasSeenAnnouncement', announcement); // 记录已查看弹窗
-  };
-
   return (
     <PageLayout>
       {/* Telegram 新用户欢迎弹窗 */}
@@ -634,7 +610,7 @@ function HomeClient() {
                   <span className='inline-block animate-wave origin-bottom-right'>👋</span>
                 </h2>
                 <p className='text-sm text-white/90'>
-                  直接搜索剧名或在源浏览器里浏览分类视频内容，如须其它功能请联系管理员admin@400821.xyz。
+                  发现更多精彩影视内容 ✨
                 </p>
               </div>
 
@@ -1275,65 +1251,6 @@ function HomeClient() {
           )}
         </div>
       </div>
-      {announcement && showAnnouncement && (
-        <div
-          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm dark:bg-black/70 p-4 transition-opacity duration-300 ${showAnnouncement ? '' : 'opacity-0 pointer-events-none'
-            }`}
-          onTouchStart={(e) => {
-            // 如果点击的是背景区域，阻止触摸事件冒泡，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-            }
-          }}
-          onTouchMove={(e) => {
-            // 如果触摸的是背景区域，阻止触摸移动，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-          }}
-          onTouchEnd={(e) => {
-            // 如果触摸的是背景区域，阻止触摸结束事件，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-            }
-          }}
-          style={{
-            touchAction: 'none', // 禁用所有触摸操作
-          }}
-        >
-          <div
-            className='w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900 transform transition-all duration-300 hover:shadow-2xl'
-            onTouchMove={(e) => {
-              // 允许公告内容区域正常滚动，阻止事件冒泡到外层
-              e.stopPropagation();
-            }}
-            style={{
-              touchAction: 'auto', // 允许内容区域的正常触摸操作
-            }}
-          >
-            <div className='mb-4'>
-              <h3 className='text-2xl font-bold tracking-tight text-gray-800 dark:text-white border-b border-green-500 pb-1'>
-                提示
-              </h3>
-            </div>
-            <div className='mb-6'>
-              <div className='relative overflow-hidden rounded-lg mb-4 bg-green-50 dark:bg-green-900/20'>
-                <div className='absolute inset-y-0 left-0 w-1.5 bg-green-500 dark:bg-green-400'></div>
-                <p className='ml-4 text-gray-600 dark:text-gray-300 leading-relaxed'>
-                  {announcement}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleCloseAnnouncement(announcement)}
-              className='w-full rounded-lg bg-linear-to-r from-green-600 to-green-700 px-4 py-3 text-white font-medium shadow-md hover:shadow-lg hover:from-green-700 hover:to-green-800 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 transition-all duration-300 transform hover:-translate-y-0.5'
-            >
-              我知道了
-            </button>
-          </div>
-        </div>
-      )}
     </PageLayout>
   );
 }
