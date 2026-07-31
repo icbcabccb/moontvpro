@@ -4,6 +4,7 @@
 
 import { ChevronRight, Film, Tv, Calendar, Sparkles, Play, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState, useRef, useMemo, useReducer } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -13,7 +14,7 @@ import {
 } from '@/lib/bangumi.client';
 import { getRecommendedShortDramas } from '@/lib/shortdrama.client';
 import { cleanExpiredCache } from '@/lib/shortdrama-cache';
-import { ShortDramaItem, ReleaseCalendarItem } from '@/lib/types';
+import { ShortDramaItem, ReleaseCalendarItem, DoubanItem } from '@/lib/types';
 // 客户端收藏 API
 import {
   clearAllFavorites,
@@ -22,8 +23,6 @@ import {
   subscribeToDataUpdates,
 } from '@/lib/db.client';
 import { getDoubanCategories, getDoubanDetails } from '@/lib/douban.client';
-import { DoubanItem } from '@/lib/types';
-import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
@@ -33,12 +32,11 @@ import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
 import ShortDramaCard from '@/components/ShortDramaCard';
 import SkeletonCard from '@/components/SkeletonCard';
-import { useSite } from '@/components/SiteProvider';
 import { TelegramWelcomeModal } from '@/components/TelegramWelcomeModal';
 import VideoCard from '@/components/VideoCard';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
-// 🎯 优化：合并状态管理 - 使用 useReducer 减少重渲染
+// 合并状态管理
 interface HomeState {
   activeTab: 'home' | 'favorites';
   hotMovies: DoubanItem[];
@@ -49,8 +47,6 @@ interface HomeState {
   bangumiCalendarData: BangumiCalendarData[];
   upcomingReleases: ReleaseCalendarItem[];
   loading: boolean;
-  username: string;
-  showAnnouncement: boolean;
 }
 
 type HomeAction =
@@ -63,8 +59,6 @@ type HomeAction =
   | { type: 'SET_BANGUMI_CALENDAR_DATA'; payload: BangumiCalendarData[] }
   | { type: 'SET_UPCOMING_RELEASES'; payload: ReleaseCalendarItem[] }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_USERNAME'; payload: string }
-  | { type: 'SET_SHOW_ANNOUNCEMENT'; payload: boolean }
   | { type: 'UPDATE_HOT_MOVIES'; payload: (prev: DoubanItem[]) => DoubanItem[] }
   | { type: 'UPDATE_HOT_TV_SHOWS'; payload: (prev: DoubanItem[]) => DoubanItem[] }
   | { type: 'UPDATE_HOT_VARIETY_SHOWS'; payload: (prev: DoubanItem[]) => DoubanItem[] }
@@ -91,10 +85,6 @@ const homeReducer = (state: HomeState, action: HomeAction): HomeState => {
       return { ...state, upcomingReleases: action.payload };
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
-    case 'SET_USERNAME':
-      return { ...state, username: action.payload };
-    case 'SET_SHOW_ANNOUNCEMENT':
-      return { ...state, showAnnouncement: action.payload };
     case 'UPDATE_HOT_MOVIES':
       return { ...state, hotMovies: action.payload(state.hotMovies) };
     case 'UPDATE_HOT_TV_SHOWS':
@@ -114,7 +104,7 @@ function HomeClient() {
   // 🚀 TanStack Query - 全局缓存管理
   const queryClient = useQueryClient();
 
-  // 🎯 优化：使用 useReducer 合并 11 个 useState，减少重渲染
+  // 🎯 优化：使用 useReducer 合并状态，减少重渲染
   const [state, dispatch] = useReducer(homeReducer, {
     activeTab: 'home',
     hotMovies: [],
@@ -125,13 +115,8 @@ function HomeClient() {
     bangumiCalendarData: [],
     upcomingReleases: [],
     loading: true,
-    username: '',
-    showAnnouncement: false,
   });
 
-  const { announcement } = useSite();
-
-  // 解构状态以便使用
   const {
     activeTab,
     hotMovies,
@@ -142,20 +127,10 @@ function HomeClient() {
     bangumiCalendarData,
     upcomingReleases,
     loading,
-    username,
-    showAnnouncement,
   } = state;
 
   // 🚀 Web Worker引用
   const workerRef = useRef<Worker | null>(null);
-
-  // 🎯 优化：缓存问候语计算
-  const greeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return '早上好';
-    if (hour < 18) return '下午好';
-    return '晚上好';
-  }, []); // 空依赖数组，只在组件挂载时计算一次
 
   // 🎯 优化：缓存今日番剧计算
   const todayAnimes = useMemo(() => {
@@ -166,23 +141,16 @@ function HomeClient() {
     return bangumiCalendarData.find(
       (item) => item.weekday.en === currentWeekday
     )?.items || [];
-  }, [bangumiCalendarData]); // 依赖bangumiCalendarData，数据变化时重新计算
+  }, [bangumiCalendarData]);
 
   // 🎯 优化：缓存今天的日期（用于上映日期计算）
   const today = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
     return date;
-  }, []); // 空依赖，只在组件挂载时计算一次
+  }, []);
 
-  // 合并初始化逻辑 - 优化性能，减少重渲染
   useEffect(() => {
-    // 获取用户名
-    const authInfo = getAuthInfoFromBrowserCookie();
-    if (authInfo?.username) {
-      dispatch({ type: 'SET_USERNAME', payload: authInfo.username });
-    }
-
     // 读取清空确认设置
     if (typeof window !== 'undefined') {
       const savedRequireClearConfirmation = localStorage.getItem('requireClearConfirmation');
@@ -190,35 +158,25 @@ function HomeClient() {
         setRequireClearConfirmation(JSON.parse(savedRequireClearConfirmation));
       }
     }
+  }, []);
 
-    // 检查公告弹窗状态
-    if (typeof window !== 'undefined' && announcement) {
-      const hasSeenAnnouncement = localStorage.getItem('hasSeenAnnouncement');
-      if (hasSeenAnnouncement !== announcement) {
-        dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: true });
-      } else {
-        dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: Boolean(!hasSeenAnnouncement && announcement) });
-      }
-    }
-  }, [announcement]);
-
-  // 🚀 TanStack Query - 使用 useQuery 获取收藏数据（自动缓存，跨页面持久化）
+  // 🚀 TanStack Query - 使用 useQuery 获取收藏数据
   const { data: allFavorites = {} } = useQuery({
     queryKey: ['favorites'],
     queryFn: () => getAllFavorites(),
-    staleTime: 5 * 60 * 1000, // 5分钟内数据保持新鲜
-    gcTime: 10 * 60 * 1000, // 10分钟后垃圾回收
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  // 🚀 TanStack Query - 使用 useQuery 获取播放记录（自动缓存，跨页面持久化）
+  // 🚀 TanStack Query - 使用 useQuery 获取播放记录
   const { data: allPlayRecords = {} } = useQuery({
     queryKey: ['playRecords'],
     queryFn: () => getAllPlayRecords(),
-    staleTime: 5 * 60 * 1000, // 5分钟内数据保持新鲜
-    gcTime: 10 * 60 * 1000, // 10分钟后垃圾回收
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  // 收藏夹数据
+  // 收藏夹数据类型
   type FavoriteItem = {
     id: string;
     source: string;
@@ -234,9 +192,7 @@ function HomeClient() {
     remarks?: string;
   };
 
-  // 🚀 TanStack Query - 使用 useMemo 计算收藏列表（自动响应数据变化）
   const favoriteItems = useMemo(() => {
-    // 根据保存时间排序（从近到远）
     return Object.entries(allFavorites)
       .sort(([, a], [, b]) => b.save_time - a.save_time)
       .map(([key, fav]) => {
@@ -244,7 +200,6 @@ function HomeClient() {
         const source = key.slice(0, plusIndex);
         const id = key.slice(plusIndex + 1);
 
-        // 查找对应的播放记录，获取当前集数
         const playRecord = allPlayRecords[key];
         const currentEpisode = playRecord?.index;
 
@@ -272,7 +227,6 @@ function HomeClient() {
   const [showClearFavoritesDialog, setShowClearFavoritesDialog] = useState(false);
   const [requireClearConfirmation, setRequireClearConfirmation] = useState(false);
 
-  // 🎯 优化：缓存收藏夹统计信息计算
   const favoriteStats = useMemo(() => {
     if (favoriteItems.length === 0) return null;
 
@@ -309,14 +263,12 @@ function HomeClient() {
   }, [favoriteItems]);
 
   useEffect(() => {
-    // 清理过期缓存
     cleanExpiredCache().catch(console.error);
 
     const fetchRecommendData = async () => {
       try {
         dispatch({ type: 'SET_LOADING', payload: true });
 
-        // 🚀 优化：并行加载所有数据（包括 bangumi），避免分批导致的页面跳动
         const [moviesData, tvShowsData, varietyShowsData, animeData, shortDramasData, bangumiData, upcomingData] = await Promise.allSettled([
           getDoubanCategories({
             kind: 'movie',
@@ -337,12 +289,10 @@ function HomeClient() {
           }),
         ]);
 
-        // 处理电影数据
         if (moviesData.status === 'fulfilled' && moviesData.value?.code === 200) {
           const movies = moviesData.value.list;
           dispatch({ type: 'SET_HOT_MOVIES', payload: movies });
 
-          // 延迟加载详情，避免阻塞主线程
           setTimeout(() => {
             Promise.all(
               movies.slice(0, 2).map(async (movie) => {
@@ -373,12 +323,10 @@ function HomeClient() {
           }, 2000);
         }
 
-        // 处理剧集数据
         if (tvShowsData.status === 'fulfilled' && tvShowsData.value?.code === 200) {
           const tvShows = tvShowsData.value.list;
           dispatch({ type: 'SET_HOT_TV_SHOWS', payload: tvShows });
 
-          // 延迟加载详情
           setTimeout(() => {
             Promise.all(
               tvShows.slice(0, 2).map(async (show) => {
@@ -409,12 +357,10 @@ function HomeClient() {
           }, 2000);
         }
 
-        // 处理动漫数据
         if (animeData.status === 'fulfilled' && animeData.value?.code === 200) {
             const animes = animeData.value.list;
             dispatch({ type: 'SET_HOT_ANIME', payload: animes });
 
-            // 延迟加载详情
             if (animes.length > 0) {
               setTimeout(() => {
                 const anime = animes[0];
@@ -434,12 +380,10 @@ function HomeClient() {
             }
         }
 
-        // 处理综艺数据
         if (varietyShowsData.status === 'fulfilled' && varietyShowsData.value?.code === 200) {
             const varietyShows = varietyShowsData.value.list;
             dispatch({ type: 'SET_HOT_VARIETY_SHOWS', payload: varietyShows });
 
-            // 延迟加载详情
             if (varietyShows.length > 0) {
               setTimeout(() => {
                 const show = varietyShows[0];
@@ -459,12 +403,10 @@ function HomeClient() {
             }
         }
 
-        // 处理短剧数据
         if (shortDramasData.status === 'fulfilled') {
             const dramas = shortDramasData.value;
             dispatch({ type: 'SET_HOT_SHORT_DRAMAS', payload: dramas });
 
-            // 延迟加载详情
             setTimeout(() => {
               Promise.all(
                 dramas.slice(0, 2).map(async (drama) => {
@@ -493,20 +435,16 @@ function HomeClient() {
             }, 3000);
         }
 
-        // 处理 bangumi 数据
         if (bangumiData.status === 'fulfilled' && Array.isArray(bangumiData.value)) {
           dispatch({ type: 'SET_BANGUMI_CALENDAR_DATA', payload: bangumiData.value });
         }
 
-        // 🚀 所有主要数据加载完成，关闭 loading（包括 bangumi）
         dispatch({ type: 'SET_LOADING', payload: false });
 
-        // 🔄 异步处理即将上映数据（不阻塞页面显示）
         if (upcomingData.status === 'fulfilled' && upcomingData.value?.items) {
           const releases = upcomingData.value.items;
           console.log('📅 获取到的即将上映数据:', releases.length, '条');
 
-          // 初始化Web Worker
           if (!workerRef.current && typeof window !== 'undefined' && window.Worker) {
             try {
               workerRef.current = new Worker(new URL('../workers/releaseCalendar.worker.ts', import.meta.url));
@@ -534,7 +472,6 @@ function HomeClient() {
             }
           }
 
-          // 发送数据到Worker处理
           if (workerRef.current) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -543,7 +480,6 @@ function HomeClient() {
               today: today.toISOString().split('T')[0],
             });
           } else {
-            // Fallback: Worker不可用时的处理
             console.warn('📅 Web Worker不可用，跳过即将上映数据处理');
             dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
           }
@@ -559,7 +495,6 @@ function HomeClient() {
 
     fetchRecommendData();
 
-    // 🚀 清理Web Worker
     return () => {
       if (workerRef.current) {
         workerRef.current.terminate();
@@ -569,29 +504,22 @@ function HomeClient() {
     };
   }, []);
 
-  // 🚀 TanStack Query - 处理清空所有收藏（使用 queryClient 刷新缓存）
   const handleClearFavorites = async () => {
     await clearAllFavorites();
-    // 刷新收藏数据缓存
     queryClient.invalidateQueries({ queryKey: ['favorites'] });
   };
 
-  // 🚀 TanStack Query - 监听数据更新事件，自动刷新缓存
   useEffect(() => {
-    // 监听收藏更新事件
     const unsubscribeFavorites = subscribeToDataUpdates(
       'favoritesUpdated',
       () => {
-        // 刷新收藏数据缓存
         queryClient.invalidateQueries({ queryKey: ['favorites'] });
       }
     );
 
-    // 监听播放记录更新事件
     const unsubscribePlayRecords = subscribeToDataUpdates(
       'playRecordsUpdated',
       () => {
-        // 刷新播放记录缓存
         queryClient.invalidateQueries({ queryKey: ['playRecords'] });
       }
     );
@@ -600,53 +528,15 @@ function HomeClient() {
       unsubscribeFavorites();
       unsubscribePlayRecords();
     };
-  }, [queryClient]); // 依赖 queryClient
-
-  const handleCloseAnnouncement = (announcement: string) => {
-    dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: false });
-    localStorage.setItem('hasSeenAnnouncement', announcement); // 记录已查看弹窗
-  };
+  }, [queryClient]);
 
   return (
     <PageLayout>
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-6 md:mt-0 pb-32 md:pb-safe-bottom'>
-        {/* 欢迎横幅 - 现代化精简设计 */}
-        <div className='mb-6 relative overflow-hidden rounded-xl bg-linear-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
-          <div className='relative p-4 sm:p-5'>
-            {/* 动态渐变背景 */}
-            <div className='absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-black/5'></div>
-
-            <div className='relative z-10 flex items-center justify-between gap-4'>
-              <div className='flex-1 min-w-0'>
-                <h2 className='text-lg sm:text-xl font-bold text-white mb-1 flex items-center gap-2 flex-wrap'>
-                  <span>
-                    {greeting}
-                    {username && '，'}
-                  </span>
-                  {username && (
-                    <span className='text-yellow-300 font-semibold'>
-                      {username}
-                    </span>
-                  )}
-                  <span className='inline-block animate-wave origin-bottom-right'>👋</span>
-                </h2>
-                <p className='text-sm text-white/90'>
-                  直接“搜索”剧名，或在“源浏览器”浏览影视分类，如需其它功能请联系管理员admin@400821.xyz
-                </p>
-              </div>
-
-              {/* 装饰图标 - 更小更精致 */}
-              <div className='hidden md:flex items-center justify-center shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20'>
-                <Film className='w-6 h-6 text-white' />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
+      <div className='overflow-visible pt-2 md:pt-4 pb-32 md:pb-safe-bottom'>
+        {/* 顶部 Tab 切换 */}
         <div className='mb-8 flex items-center justify-center'>
           <CapsuleSwitch
             options={[
@@ -670,7 +560,6 @@ function HomeClient() {
                   <button
                     className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-white hover:bg-red-600 dark:text-red-400 dark:hover:text-white dark:hover:bg-red-500 border border-red-300 dark:border-red-700 hover:border-red-600 dark:hover:border-red-500 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md'
                     onClick={() => {
-                      // 根据用户设置决定是否显示确认对话框
                       if (requireClearConfirmation) {
                         setShowClearFavoritesDialog(true);
                       } else {
@@ -778,103 +667,83 @@ function HomeClient() {
 
               <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-14 sm:gap-y-20 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
                 {(() => {
-                  // 筛选
                   let filtered = favoriteItems;
                   if (favoriteFilter === 'movie') {
                     filtered = favoriteItems.filter(item => {
-                      // 优先用 type 字段判断
                       if (item.type) return item.type === 'movie';
-                      // 向后兼容：没有 type 时用 episodes 判断
                       if (item.source === 'shortdrama' || item.source_name === '短剧') return false;
-                      if (item.source === 'bangumi') return false; // 排除动漫
-                      if (item.origin === 'live') return false; // 排除直播
-                      // vod 来源：按集数判断
+                      if (item.source === 'bangumi') return false;
+                      if (item.origin === 'live') return false;
                       return item.episodes === 1;
                     });
                   } else if (favoriteFilter === 'tv') {
                     filtered = favoriteItems.filter(item => {
-                      // 优先用 type 字段判断
                       if (item.type) return item.type === 'tv';
-                      // 向后兼容：没有 type 时用 episodes 判断
                       if (item.source === 'shortdrama' || item.source_name === '短剧') return false;
-                      if (item.source === 'bangumi') return false; // 排除动漫
-                      if (item.origin === 'live') return false; // 排除直播
-                      // vod 来源：按集数判断
+                      if (item.source === 'bangumi') return false;
+                      if (item.origin === 'live') return false;
                       return item.episodes > 1;
                     });
                   } else if (favoriteFilter === 'anime') {
                     filtered = favoriteItems.filter(item => {
-                      // 优先用 type 字段判断
                       if (item.type) return item.type === 'anime';
-                      // 向后兼容：用 source 判断
                       return item.source === 'bangumi';
                     });
                   } else if (favoriteFilter === 'shortdrama') {
                     filtered = favoriteItems.filter(item => {
-                      // 优先用 type 字段判断
                       if (item.type) return item.type === 'shortdrama';
-                      // 向后兼容：用 source 判断
                       return item.source === 'shortdrama' || item.source_name === '短剧';
                     });
                   } else if (favoriteFilter === 'live') {
                     filtered = favoriteItems.filter(item => item.origin === 'live');
                   } else if (favoriteFilter === 'variety') {
                     filtered = favoriteItems.filter(item => {
-                      // 优先用 type 字段判断
                       if (item.type) return item.type === 'variety';
-                      // 向后兼容：暂无 fallback
                       return false;
                     });
                   }
 
-                  // 排序
                   if (favoriteSortBy === 'title') {
                     filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'));
                   }
-                  // 'recent' 已经在 updateFavoriteItems 中按 save_time 排序了
 
                   return filtered.map((item) => {
-                  // 智能计算即将上映状态
-                  let calculatedRemarks = item.remarks;
+                    let calculatedRemarks = item.remarks;
 
-                  if (item.releaseDate) {
-                    const releaseDate = new Date(item.releaseDate);
-                    const daysDiff = Math.ceil((releaseDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                    if (item.releaseDate) {
+                      const releaseDate = new Date(item.releaseDate);
+                      const daysDiff = Math.ceil((releaseDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-                    // 根据天数差异动态更新显示文字
-                    if (daysDiff < 0) {
-                      const daysAgo = Math.abs(daysDiff);
-                      calculatedRemarks = `已上映${daysAgo}天`;
-                    } else if (daysDiff === 0) {
-                      calculatedRemarks = '今日上映';
-                    } else {
-                      calculatedRemarks = `${daysDiff}天后上映`;
+                      if (daysDiff < 0) {
+                        const daysAgo = Math.abs(daysDiff);
+                        calculatedRemarks = `已上映${daysAgo}天`;
+                      } else if (daysDiff === 0) {
+                        calculatedRemarks = '今日上映';
+                      } else {
+                        calculatedRemarks = `${daysDiff}天后上映`;
+                      }
                     }
-                  }
 
-                  return (
-                    <div key={item.id + item.source} className='w-full'>
-                      <VideoCard
-                        query={item.search_title}
-                        {...item}
-                        from='favorite'
-                        remarks={calculatedRemarks}
-                      />
-                    </div>
-                  );
-                })})()}
+                    return (
+                      <div key={item.id + item.source} className='w-full'>
+                        <VideoCard
+                          query={item.search_title}
+                          {...item}
+                          from='favorite'
+                          remarks={calculatedRemarks}
+                        />
+                      </div>
+                    );
+                  })})()}
                 {favoriteItems.length === 0 && (
                   <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
-                    {/* SVG 插画 - 空收藏夹 */}
                     <div className='mb-6 relative'>
                       <div className='absolute inset-0 bg-linear-to-r from-pink-300 to-purple-300 dark:from-pink-600 dark:to-purple-600 opacity-20 blur-3xl rounded-full animate-pulse'></div>
                       <svg className='w-32 h-32 relative z-10' viewBox='0 0 200 200' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                        {/* 心形主体 */}
                         <path d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
                           className='fill-gray-300 dark:fill-gray-600 stroke-gray-400 dark:stroke-gray-500 transition-colors duration-300'
                           strokeWidth='3'
                         />
-                        {/* 虚线边框 */}
                         <path d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
                           fill='none'
                           stroke='currentColor'
@@ -885,7 +754,6 @@ function HomeClient() {
                       </svg>
                     </div>
 
-                    {/* 文字提示 */}
                     <h3 className='text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2'>
                       收藏夹空空如也
                     </h3>
@@ -916,7 +784,6 @@ function HomeClient() {
                 <section className='mb-8'>
                   <HeroBanner
                     items={[
-                      // 豆瓣电影
                       ...hotMovies.slice(0, 2).map((movie) => ({
                         id: movie.id,
                         title: movie.title,
@@ -929,7 +796,6 @@ function HomeClient() {
                         douban_id: Number(movie.id),
                         type: 'movie',
                       })),
-                      // 豆瓣电视剧
                       ...hotTvShows.slice(0, 2).map((show) => ({
                         id: show.id,
                         title: show.title,
@@ -942,7 +808,6 @@ function HomeClient() {
                         douban_id: Number(show.id),
                         type: 'tv',
                       })),
-                      // 豆瓣综艺
                       ...hotVarietyShows.slice(0, 1).map((show) => ({
                         id: show.id,
                         title: show.title,
@@ -955,7 +820,6 @@ function HomeClient() {
                         douban_id: Number(show.id),
                         type: 'variety',
                       })),
-                      // 豆瓣动漫
                       ...hotAnime.slice(0, 1).map((anime) => ({
                         id: anime.id,
                         title: anime.title,
@@ -1032,42 +896,40 @@ function HomeClient() {
                     {upcomingReleases
                       .filter(release => upcomingFilter === 'all' || release.type === upcomingFilter)
                       .map((release, index) => {
-                        // 计算距离上映还有几天
                         const releaseDate = new Date(release.releaseDate);
                         const daysDiff = Math.ceil((releaseDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-                      // 根据天数差异显示不同文字
-                      let remarksText;
-                      if (daysDiff < 0) {
-                        remarksText = `已上映${Math.abs(daysDiff)}天`;
-                      } else if (daysDiff === 0) {
-                        remarksText = '今日上映';
-                      } else {
-                        remarksText = `${daysDiff}天后上映`;
-                      }
+                        let remarksText;
+                        if (daysDiff < 0) {
+                          remarksText = `已上映${Math.abs(daysDiff)}天`;
+                        } else if (daysDiff === 0) {
+                          remarksText = '今日上映';
+                        } else {
+                          remarksText = `${daysDiff}天后上映`;
+                        }
 
-                      return (
-                        <div
-                          key={`${release.id}-${index}`}
-                          className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
-                        >
-                          <VideoCard
-                            source='upcoming_release'
-                            id={release.id}
-                            source_name='即将上映'
-                            from='douban'
-                            title={release.title}
-                            poster={release.cover || '/placeholder-poster.jpg'}
-                            year={release.releaseDate.split('-')[0]}
-                            type={release.type}
-                            remarks={remarksText}
-                            releaseDate={release.releaseDate}
-                            query={release.title}
-                            episodes={release.episodes || (release.type === 'tv' ? undefined : 1)}
-                          />
-                        </div>
-                      );
-                    })}
+                        return (
+                          <div
+                            key={`${release.id}-${index}`}
+                            className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                          >
+                            <VideoCard
+                              source='upcoming_release'
+                              id={release.id}
+                              source_name='即将上映'
+                              from='douban'
+                              title={release.title}
+                              poster={release.cover || '/placeholder-poster.jpg'}
+                              year={release.releaseDate.split('-')[0]}
+                              type={release.type}
+                              remarks={remarksText}
+                              releaseDate={release.releaseDate}
+                              query={release.title}
+                              episodes={release.episodes || (release.type === 'tv' ? undefined : 1)}
+                            />
+                          </div>
+                        );
+                      })}
                   </ScrollableRow>
                 </section>
               )}
@@ -1086,12 +948,10 @@ function HomeClient() {
                 </div>
                 <ScrollableRow enableVirtualization={true}>
                   {loading
-                    ? // 加载状态显示灰色占位数据
-                    Array.from({ length: 8 }).map((_, index) => (
+                    ? Array.from({ length: 8 }).map((_, index) => (
                       <SkeletonCard key={index} />
                     ))
-                    : // 显示真实数据
-                    hotMovies.map((movie, index) => (
+                    : hotMovies.map((movie, index) => (
                       <div
                         key={index}
                         className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
@@ -1127,12 +987,10 @@ function HomeClient() {
                 </div>
                 <ScrollableRow enableVirtualization={true}>
                   {loading
-                    ? // 加载状态显示灰色占位数据
-                    Array.from({ length: 8 }).map((_, index) => (
+                    ? Array.from({ length: 8 }).map((_, index) => (
                       <SkeletonCard key={index} />
                     ))
-                    : // 显示真实数据
-                    hotTvShows.map((show, index) => (
+                    : hotTvShows.map((show, index) => (
                       <div
                         key={index}
                         className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
@@ -1168,12 +1026,10 @@ function HomeClient() {
                 </div>
                 <ScrollableRow enableVirtualization={true}>
                   {loading
-                    ? // 加载状态显示灰色占位数据
-                    Array.from({ length: 8 }).map((_, index) => (
+                    ? Array.from({ length: 8 }).map((_, index) => (
                       <SkeletonCard key={index} />
                     ))
-                    : // 展示当前日期的番剧
-                    todayAnimes.map((anime, index) => (
+                    : todayAnimes.map((anime, index) => (
                         <div
                           key={`${anime.id}-${index}`}
                           className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
@@ -1216,12 +1072,10 @@ function HomeClient() {
                 </div>
                 <ScrollableRow enableVirtualization={true}>
                   {loading
-                    ? // 加载状态显示灰色占位数据
-                    Array.from({ length: 8 }).map((_, index) => (
+                    ? Array.from({ length: 8 }).map((_, index) => (
                       <SkeletonCard key={index} />
                     ))
-                    : // 显示真实数据
-                    hotVarietyShows.map((show, index) => (
+                    : hotVarietyShows.map((show, index) => (
                       <div
                         key={index}
                         className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
@@ -1257,12 +1111,10 @@ function HomeClient() {
                 </div>
                 <ScrollableRow enableVirtualization={true}>
                   {loading
-                    ? // 加载状态显示灰色占位数据
-                    Array.from({ length: 8 }).map((_, index) => (
+                    ? Array.from({ length: 8 }).map((_, index) => (
                       <SkeletonCard key={index} />
                     ))
-                    : // 显示真实数据
-                    hotShortDramas.map((drama, index) => (
+                    : hotShortDramas.map((drama, index) => (
                       <ShortDramaCard
                         key={index}
                         drama={drama}
@@ -1275,65 +1127,6 @@ function HomeClient() {
           )}
         </div>
       </div>
-      {announcement && showAnnouncement && (
-        <div
-          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm dark:bg-black/70 p-4 transition-opacity duration-300 ${showAnnouncement ? '' : 'opacity-0 pointer-events-none'
-            }`}
-          onTouchStart={(e) => {
-            // 如果点击的是背景区域，阻止触摸事件冒泡，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-            }
-          }}
-          onTouchMove={(e) => {
-            // 如果触摸的是背景区域，阻止触摸移动，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-          }}
-          onTouchEnd={(e) => {
-            // 如果触摸的是背景区域，阻止触摸结束事件，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-            }
-          }}
-          style={{
-            touchAction: 'none', // 禁用所有触摸操作
-          }}
-        >
-          <div
-            className='w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900 transform transition-all duration-300 hover:shadow-2xl'
-            onTouchMove={(e) => {
-              // 允许公告内容区域正常滚动，阻止事件冒泡到外层
-              e.stopPropagation();
-            }}
-            style={{
-              touchAction: 'auto', // 允许内容区域的正常触摸操作
-            }}
-          >
-            <div className='mb-4'>
-              <h3 className='text-2xl font-bold tracking-tight text-gray-800 dark:text-white border-b border-green-500 pb-1'>
-                提示
-              </h3>
-            </div>
-            <div className='mb-6'>
-              <div className='relative overflow-hidden rounded-lg mb-4 bg-green-50 dark:bg-green-900/20'>
-                <div className='absolute inset-y-0 left-0 w-1.5 bg-green-500 dark:bg-green-400'></div>
-                <p className='ml-4 text-gray-600 dark:text-gray-300 leading-relaxed'>
-                  {announcement}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleCloseAnnouncement(announcement)}
-              className='w-full rounded-lg bg-linear-to-r from-green-600 to-green-700 px-4 py-3 text-white font-medium shadow-md hover:shadow-lg hover:from-green-700 hover:to-green-800 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 transition-all duration-300 transform hover:-translate-y-0.5'
-            >
-              我知道了
-            </button>
-          </div>
-        </div>
-      )}
     </PageLayout>
   );
 }
