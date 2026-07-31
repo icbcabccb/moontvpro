@@ -1071,12 +1071,12 @@ function HomeClient() {
               {/* 热门短剧 */}
               <section className='mb-8'>
                 <div className='mb-4 flex items-center justify-between'>
-                  <SectionTitle title="热门短剧" icon={Play} iconColor="text-orange-500" />
+                  <SectionTitle title="------------" icon={} iconColor="text-orange-500" />
                   <Link
                     href='/shortdrama'
                     className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                   >
-                    查看更多
+                    ------------
                     <ChevronRight className='w-4 h-4 ml-1' />
                   </Link>
                 </div>
