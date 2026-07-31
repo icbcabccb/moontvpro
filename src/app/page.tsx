@@ -555,10 +555,10 @@ function HomeClient() {
                       {username}
                     </span>
                   )}
-                  <span className='inline-block animate-wave origin-bottom-right'>👋</span>
+                  <span className='inline-block animate-wave origin-bottom-right'>！</span>
                 </h2>
                 <p className='text-sm text-white/90'>
-                  发现更多精彩影视内容 ✨
+                  直接在导航栏点击“搜索”剧名，或在“源浏览器”浏览影视分类，如需其它功能请联系管理员admin@400821.xyz
                 </p>
               </div>
 
