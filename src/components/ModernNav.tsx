@@ -139,9 +139,9 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
       <nav className='hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50'>
         <div className='max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
-            {/* Logo - 自定义修改了字体颜色(红橙黄渐变)、字号(2xl)和字间距(tracking-wide) */}
+            {/* Logo - 自定义修改了字体颜色(红紫蓝渐变)、字号(2xl)和字间距(tracking-wide) */}
             <FastLink href='/' className='shrink-0'>
-              <div className='text-2xl font-black tracking-wide bg-linear-to-r from-red-500 via-orange-500 to-yellow-400 bg-clip-text text-transparent'>
+              <div className='text-xl font-bold bg-linear-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent'>
                 {siteName}
               </div>
             </FastLink>
