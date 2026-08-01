@@ -1075,10 +1075,19 @@ function HomeClient() {
     <div className="flex flex-col md:flex-row justify-between items-center gap-6">
       {/* 左侧 Logo 与 版权信息 */}
       <div className="text-center md:text-left">
-        <div className="flex items-center justify-center md:justify-start">
-          <svg className="w-6 h-6 mr-2 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <div className="flex items-center justify-center md:justify-start gap-2">
+          {/* 新增 图片 Logo */}
+          <img 
+            src="/logo.png" 
+            alt="红月搜索 Logo" 
+            className="w-6 h-6 object-contain" 
+          />
+          
+          {/* SVG Logo */}
+          <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 15.75-2.489-2.489m0 0a3.375 3.375 0 1 0-4.773-4.773 3.375 3.375 0 0 0 4.774 4.774ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           </svg>
+
           <span className="text-red-500 font-bold text-lg">红月搜索</span>
         </div>
         <p className="text-gray-500 text-sm mt-2">
@@ -1089,7 +1098,7 @@ function HomeClient() {
       {/* 右侧 免责声明与链接 */}
       <div className="text-center md:text-right space-y-3">
         <p className="text-gray-500 text-xs sm:text-sm max-w-md mx-auto md:ml-auto leading-relaxed">
-          
+          免责声明：本站仅为视频搜索工具，不存储、上传或分发任何视频内容。所有视频均来自第三方API接口。如有侵权，请联系相关内容提供方。
         </p>
         <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-2 pt-1">
           <Link href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">
