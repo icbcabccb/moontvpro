@@ -556,9 +556,9 @@ function HomeClient() {
                       {username}
                     </span>
                   )}
-                  <span className='inline-block animate-wave origin-bottom-right'>👋</span>
+                  <span className='inline-block animate-wave origin-bottom-right'>🪻🪻🪻</span>
                 </h2>
-                <p className='text-sm text-black'>
+                <p className='text-sm text-blue-800'>
                   直接打开菜单栏【搜索】输入剧名或在【分类】里选览视频内容，如需其它功能请附上账号ID联系管理员admin@400821.xyz。
                 </p>
               </div>
