@@ -1070,7 +1070,7 @@ function HomeClient() {
               </section>
               
 {/* 独立流式页脚 */}
-<footer className="w-full mt-12 py-6 mb-20 md:mb-0 border-t border-[#333] bg-[#0a0a0a] text-gray-400 relative z-30">
+<footer className="w-full mt-12 py-6 mb-20 md:mb-0 border-t border-[#333] bg-[#e0ffff] text-gray-400 relative z-30">
   <div className="max-w-7xl mx-auto px-4">
     <div className="flex flex-col md:flex-row justify-between items-center gap-6">
       {/* 左侧 Logo 与 版权信息 */}
