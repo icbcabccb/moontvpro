@@ -26,7 +26,6 @@ import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
-import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -538,7 +537,7 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-6 md:mt-0 pb-44 md:pb-36'>
+      <div className='overflow-visible -mt-6 md:mt-0 pb-32 md:pb-safe-bottom'>
         {/* 欢迎横幅 */}
         <div className='mb-6 relative overflow-hidden rounded-xl bg-linear-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
           <div className='relative p-4 sm:p-5'>
@@ -1069,51 +1068,36 @@ function HomeClient() {
                 </ScrollableRow>
               </section>
 
-              {/* 热门短剧模块已按要求移除 */}
+              {/* 热门短剧 */}
+              <section className='mb-8'>
+                <div className='mb-4 flex items-center justify-between'>
+                  <SectionTitle title="热门短剧" icon={Play} iconColor="text-orange-500" />
+                  <Link
+                    href='/shortdrama'
+                    className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+                  >
+                    查看更多
+                    <ChevronRight className='w-4 h-4 ml-1' />
+                  </Link>
+                </div>
+                <ScrollableRow enableVirtualization={true}>
+                  {loading
+                    ? Array.from({ length: 8 }).map((_, index) => (
+                      <SkeletonCard key={index} />
+                    ))
+                    : hotShortDramas.map((drama, index) => (
+                      <ShortDramaCard
+                        key={index}
+                        drama={drama}
+                        className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                      />
+                    ))}
+                </ScrollableRow>
+              </section>
             </>
           )}
         </div>
       </div>
-
-      {/* 独立固定黑色页脚 */}
-      <footer className='fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-t border-zinc-800 text-gray-400 py-3.5 px-4 sm:px-8 text-xs shadow-2xl'>
-        <div className='max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3'>
-          {/* 友情链接（8个） */}
-          <div className='flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-gray-400'>
-            <span className='text-gray-500 font-semibold text-xs'>友情链接：</span>
-            <a href='https://movie.douban.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              豆瓣电影
-            </a>
-            <a href='https://bangumi.tv' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              Bangumi 番组计划
-            </a>
-            <a href='https://www.themoviedb.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              TMDB 影视库
-            </a>
-            <a href='https://github.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              GitHub
-            </a>
-            <a href='https://vercel.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              Vercel
-            </a>
-            <a href='https://www.cloudflare.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              Cloudflare
-            </a>
-            <a href='https://nextjs.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              Next.js
-            </a>
-            <a href='https://tailwindcss.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-              Tailwind CSS
-            </a>
-          </div>
-
-          {/* 版权声明及免责 */}
-          <div className='text-center md:text-right text-[12px] text-gray-400 leading-tight space-y-0.5'>
-            <div>© {new Date().getFullYear()} 红月搜索. All Rights Reserved.</div>
-            <div className='text-[10px] text-gray-400'>声明：本站资源来自网络，不存储任何音视频文件。</div>
-          </div>
-        </div>
-      </footer>
     </PageLayout>
   );
 }
