@@ -552,13 +552,13 @@ function HomeClient() {
                     {username && '，'}
                   </span>
                   {username && (
-                    <span className='text-yellow-300 font-semibold'>
+                    <span className='text-red-400 font-semibold'>
                       {username}
                     </span>
                   )}
                   <span className='inline-block animate-wave origin-bottom-right'>👋</span>
                 </h2>
-                <p className='text-sm text-white/90'>
+                <p className='text-sm text-black'>
                   直接打开菜单栏【搜索】输入剧名或在【分类】里选览视频内容，如需其它功能请附上账号ID联系管理员admin@400821.xyz。
                 </p>
               </div>
