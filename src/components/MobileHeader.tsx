@@ -47,11 +47,11 @@ const MobileHeader = ({ showBackButton = false }: MobileHeaderProps) => {
         </div>
       </div>
 
-      {/* 中间：Logo（绝对居中） */}
+      {/* 中间：Logo（绝对居中） - 已修改为红橙黄渐变色并修复 Tailwind 语法 */}
       <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
         <Link
           href='/'
-          className='text-2xl font-bold bg-linear-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent'
+          className='text-2xl font-black tracking-wide bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 bg-clip-text text-transparent'
         >
           {siteName}
         </Link>
