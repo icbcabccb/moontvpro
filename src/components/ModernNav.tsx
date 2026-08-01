@@ -58,7 +58,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
       icon: Film,
       label: '电影',
       href: '/douban?type=movie',
-      color: 'text-red-500',
+      color: 'text-green-500',
       gradient: 'from-green-500 to-emerald-500',
     },
     {
