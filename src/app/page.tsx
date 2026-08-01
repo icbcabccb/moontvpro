@@ -26,7 +26,6 @@ import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
-import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -813,68 +812,6 @@ function HomeClient() {
           ) : (
             // 首页视图
             <>
-              {/* Hero Banner 轮播 */}
-              {!loading && (hotMovies.length > 0 || hotTvShows.length > 0 || hotVarietyShows.length > 0 || hotShortDramas.length > 0) && (
-                <section className='mb-8'>
-                  <HeroBanner
-                    items={[
-                      ...hotMovies.slice(0, 2).map((movie) => ({
-                        id: movie.id,
-                        title: movie.title,
-                        poster: movie.poster,
-                        backdrop: movie.backdrop,
-                        trailerUrl: movie.trailerUrl,
-                        description: movie.plot_summary,
-                        year: movie.year,
-                        rate: movie.rate,
-                        douban_id: Number(movie.id),
-                        type: 'movie',
-                      })),
-                      ...hotTvShows.slice(0, 2).map((show) => ({
-                        id: show.id,
-                        title: show.title,
-                        poster: show.poster,
-                        backdrop: show.backdrop,
-                        trailerUrl: show.trailerUrl,
-                        description: show.plot_summary,
-                        year: show.year,
-                        rate: show.rate,
-                        douban_id: Number(show.id),
-                        type: 'tv',
-                      })),
-                      ...hotVarietyShows.slice(0, 1).map((show) => ({
-                        id: show.id,
-                        title: show.title,
-                        poster: show.poster,
-                        backdrop: show.backdrop,
-                        trailerUrl: show.trailerUrl,
-                        description: show.plot_summary,
-                        year: show.year,
-                        rate: show.rate,
-                        douban_id: Number(show.id),
-                        type: 'variety',
-                      })),
-                      ...hotAnime.slice(0, 1).map((anime) => ({
-                        id: anime.id,
-                        title: anime.title,
-                        poster: anime.poster,
-                        backdrop: anime.backdrop,
-                        trailerUrl: anime.trailerUrl,
-                        description: anime.plot_summary,
-                        year: anime.year,
-                        rate: anime.rate,
-                        douban_id: Number(anime.id),
-                        type: 'anime',
-                      }))
-                    ]}
-                    autoPlayInterval={8000}
-                    showControls={true}
-                    showIndicators={true}
-                    enableVideo={true}
-                  />
-                </section>
-              )}
-
               {/* 继续观看 */}
               <ContinueWatching />
 
@@ -1089,7 +1026,7 @@ function HomeClient() {
                           />
                         </div>
                       ))}
-                </ScrollableRow>
+                ScrollableRow>
               </section>
 
               {/* 热门综艺 */}
@@ -1128,10 +1065,10 @@ function HomeClient() {
                         />
                       </div>
                     ))}
-                </ScrollableRow>
+                ScrollableRow>
               </section>
 
-              {/* 热门短剧模块已按要求移除 */}
+              {/* 热门短剧模块已按要求隐藏 */}
             </>
           )}
         </div>
@@ -1170,9 +1107,9 @@ function HomeClient() {
           </div>
 
           {/* 版权声明及免责 */}
-          <div className='text-center md:text-right text-[11px] text-gray-400 leading-tight space-y-0.5'>
+          <div className='text-center md:text-right text-[18px] text-gray-400 leading-tight space-y-0.5'>
             <div>© {new Date().getFullYear()} 红月搜索. All Rights Reserved.</div>
-            <div className='text-[10px] text-gray-400'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
+            <div className='text-[15px] text-gray-400'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
           </div>
         </div>
       </footer>
