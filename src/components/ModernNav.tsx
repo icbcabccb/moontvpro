@@ -37,7 +37,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
       icon: Home,
       label: '首页',
       href: '/',
-      color: 'text-green-500',
+      color: 'text-red-500',
       gradient: 'from-green-500 to-emerald-500',
     },
     {
