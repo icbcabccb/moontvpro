@@ -26,6 +26,7 @@ import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
+import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -537,8 +538,8 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-6 md:mt-0 pb-16 md:pb-safe-bottom'>
-        {/* 欢迎横幅 - 现代化精简设计 */}
+      <div className='overflow-visible -mt-6 md:mt-0 pb-44 md:pb-36'>
+        {/* 欢迎横幅 */}
         <div className='mb-6 relative overflow-hidden rounded-xl bg-linear-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
           <div className='relative p-4 sm:p-5'>
             <div className='absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-black/5'></div>
@@ -1130,56 +1131,48 @@ function HomeClient() {
                 </ScrollableRow>
               </section>
 
-              {/* 热门短剧模块已按要求隐藏/移除 */}
+              {/* 热门短剧模块已按要求移除 */}
             </>
           )}
         </div>
       </div>
 
       {/* 独立固定黑色页脚 */}
-      <footer className='w-full bg-black border-t border-zinc-800/80 py-8 px-4 sm:px-8 text-xs text-gray-400 mt-12 relative z-20'>
-        <div className='max-w-7xl mx-auto space-y-6'>
-          {/* 友情链接区域 (8个外链) */}
-          <div className='space-y-2.5'>
-            <h4 className='text-sm font-semibold text-gray-200 border-l-2 border-emerald-500 pl-2.5'>
-              友情链接
-            </h4>
-            <div className='flex flex-wrap gap-x-6 gap-y-2.5 text-gray-400 pt-1'>
-              <a href='https://movie.douban.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                豆瓣电影
-              </a>
-              <a href='https://bangumi.tv' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                Bangumi 番组计划
-              </a>
-              <a href='https://www.themoviedb.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                TMDB 影视库
-              </a>
-              <a href='https://github.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                GitHub 开源社区
-              </a>
-              <a href='https://vercel.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                Vercel 托管
-              </a>
-              <a href='https://www.cloudflare.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                Cloudflare 网络
-              </a>
-              <a href='https://nextjs.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                Next.js 框架
-              </a>
-              <a href='https://tailwindcss.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
-                Tailwind CSS
-              </a>
-            </div>
+      <footer className='fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-t border-zinc-800 text-gray-400 py-3.5 px-4 sm:px-8 text-xs shadow-2xl'>
+        <div className='max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3'>
+          {/* 友情链接（8个） */}
+          <div className='flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-gray-400'>
+            <span className='text-gray-500 font-semibold text-xs'>友情链接：</span>
+            <a href='https://movie.douban.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              豆瓣电影
+            </a>
+            <a href='https://bangumi.tv' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              Bangumi 番组计划
+            </a>
+            <a href='https://www.themoviedb.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              TMDB 影视库
+            </a>
+            <a href='https://github.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              GitHub
+            </a>
+            <a href='https://vercel.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              Vercel
+            </a>
+            <a href='https://www.cloudflare.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              Cloudflare
+            </a>
+            <a href='https://nextjs.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              Next.js
+            </a>
+            <a href='https://tailwindcss.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+              Tailwind CSS
+            </a>
           </div>
 
-          {/* 版权及免责信息 */}
-          <div className='pt-4 border-t border-zinc-900 text-center sm:text-left space-y-1.5 text-gray-500'>
-            <p className='text-gray-400 font-medium'>
-              © {new Date().getFullYear()} 影视聚合平台. All Rights Reserved.
-            </p>
-            <p className='text-[11px] text-gray-600 leading-relaxed'>
-              免责声明：本站所有影视资源均来源于互联网第三方公开接口，仅供个人学习交流及测试研究使用。本平台不提供任何音视频文件的存储、上传或制作服务。
-            </p>
+          {/* 版权声明及免责 */}
+          <div className='text-center md:text-right text-[11px] text-gray-500 leading-tight space-y-0.5'>
+            <div>© {new Date().getFullYear()} 影视平台. All Rights Reserved.</div>
+            <div className='text-[10px] text-gray-600'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
           </div>
         </div>
       </footer>
