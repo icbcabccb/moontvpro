@@ -1108,9 +1108,9 @@ function HomeClient() {
           </div>
 
           {/* 版权声明及免责 */}
-          <div className='text-center md:text-right text-[11px] text-gray-500 leading-tight space-y-0.5'>
-            <div>© {new Date().getFullYear()} 影视平台. All Rights Reserved.</div>
-            <div className='text-[10px] text-gray-600'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
+          <div className='text-center md:text-right text-[18px] text-gray-400 leading-tight space-y-0.5'>
+            <div>© {new Date().getFullYear()} 红月搜索. All Rights Reserved.</div>
+            <div className='text-[15px] text-gray-400'>声明：本站资源来自网络，不存储任何音视频文件。</div>
           </div>
         </div>
       </footer>
