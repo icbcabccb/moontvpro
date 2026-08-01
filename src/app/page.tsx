@@ -1098,14 +1098,14 @@ function HomeClient() {
       {/* 右侧 免责声明与链接 */}
       <div className="text-center md:text-right space-y-3">
         <p className="text-gray-500 text-xs sm:text-sm max-w-md mx-auto md:ml-auto leading-relaxed">
-          免责声明：本站仅为视频搜索工具，不存储、上传或分发任何视频内容。所有视频均来自第三方API接口。如有侵权，请联系相关内容提供方。
+          
         </p>
         <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-2 pt-1">
           <Link href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">
-            关于红月
+            
           </Link>
           <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
-            隐私政策
+            
           </Link>
           <a href="https://200805.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
             网盘系统
