@@ -1107,16 +1107,16 @@ function HomeClient() {
           <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
             
           </Link>
-          <a href="https://200805.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+          <a href="https://200805.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-800 hover:text-blue-800 text-sm transition-colors">
             网盘系统
           </a>
-          <a href="https://timis.dpdns.org" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+          <a href="https://timis.dpdns.org" target="_blank" rel="noopener noreferrer" className="text-blue-800 hover:text-blue-800 text-sm transition-colors">
             API中转服务
           </a>
-          <a href="https://ctv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+          <a href="https://ctv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-800 hover:text-blue-800 text-sm transition-colors">
             RedMoon-CTV
           </a>
-          <a href="https://vtv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+          <a href="https://vtv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-800 hover:text-blue-800 text-sm transition-colors">
             RedMoon-VTV
           </a>
         </div>
