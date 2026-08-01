@@ -141,7 +141,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
             <FastLink href='/' className='shrink-0'>
-              <div className='text-2xl font-black tracking-wide bg-linear-to-r from-red-500 via-orange-500 to-yellow-400 bg-clip-text text-transparent'>
+              <div className='text-xl font-bold bg-linear-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent'>
                 {siteName}
               </div>
             </FastLink>
