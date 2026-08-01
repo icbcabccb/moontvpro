@@ -1,3 +1,10 @@
+已为您将首页的**大图海报轮播组件模块 (`HeroBanner`)** 完全移除（包括组件导入以及对应 JSX 结构的删除）。
+
+其余的首页组件（继续观看、即将上映、热门电影、热门剧集、新番放送、热门综艺）以及上一轮添加的**固定黑色底部页脚**均完整保留。
+
+### 修改后的完整源代码
+
+```tsx
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-console */
 
 'use client';
@@ -26,7 +33,6 @@ import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
-import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -813,68 +819,6 @@ function HomeClient() {
           ) : (
             // 首页视图
             <>
-              {/* Hero Banner 轮播 */}
-              {!loading && (hotMovies.length > 0 || hotTvShows.length > 0 || hotVarietyShows.length > 0 || hotShortDramas.length > 0) && (
-                <section className='mb-8'>
-                  <HeroBanner
-                    items={[
-                      ...hotMovies.slice(0, 2).map((movie) => ({
-                        id: movie.id,
-                        title: movie.title,
-                        poster: movie.poster,
-                        backdrop: movie.backdrop,
-                        trailerUrl: movie.trailerUrl,
-                        description: movie.plot_summary,
-                        year: movie.year,
-                        rate: movie.rate,
-                        douban_id: Number(movie.id),
-                        type: 'movie',
-                      })),
-                      ...hotTvShows.slice(0, 2).map((show) => ({
-                        id: show.id,
-                        title: show.title,
-                        poster: show.poster,
-                        backdrop: show.backdrop,
-                        trailerUrl: show.trailerUrl,
-                        description: show.plot_summary,
-                        year: show.year,
-                        rate: show.rate,
-                        douban_id: Number(show.id),
-                        type: 'tv',
-                      })),
-                      ...hotVarietyShows.slice(0, 1).map((show) => ({
-                        id: show.id,
-                        title: show.title,
-                        poster: show.poster,
-                        backdrop: show.backdrop,
-                        trailerUrl: show.trailerUrl,
-                        description: show.plot_summary,
-                        year: show.year,
-                        rate: show.rate,
-                        douban_id: Number(show.id),
-                        type: 'variety',
-                      })),
-                      ...hotAnime.slice(0, 1).map((anime) => ({
-                        id: anime.id,
-                        title: anime.title,
-                        poster: anime.poster,
-                        backdrop: anime.backdrop,
-                        trailerUrl: anime.trailerUrl,
-                        description: anime.plot_summary,
-                        year: anime.year,
-                        rate: anime.rate,
-                        douban_id: Number(anime.id),
-                        type: 'anime',
-                      }))
-                    ]}
-                    autoPlayInterval={8000}
-                    showControls={true}
-                    showIndicators={true}
-                    enableVideo={true}
-                  />
-                </section>
-              )}
-
               {/* 继续观看 */}
               <ContinueWatching />
 
@@ -1089,7 +1033,7 @@ function HomeClient() {
                           />
                         </div>
                       ))}
-                </ScrollableRow>
+                ScrollableRow>
               </section>
 
               {/* 热门综艺 */}
@@ -1128,10 +1072,10 @@ function HomeClient() {
                         />
                       </div>
                     ))}
-                </ScrollableRow>
+                ScrollableRow>
               </section>
 
-              {/* 热门短剧模块已按要求移除 */}
+              {/* 热门短剧模块已隐藏 */}
             </>
           )}
         </div>
@@ -1187,3 +1131,5 @@ export default function Home() {
     </Suspense>
   );
 }
+
+```
