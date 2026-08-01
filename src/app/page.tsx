@@ -546,7 +546,7 @@ function HomeClient() {
 
             <div className='relative z-10 flex items-center justify-between gap-4'>
               <div className='flex-1 min-w-0'>
-                <h2 className='text-lg sm:text-xl font-bold text-white mb-1 flex items-center gap-2 flex-wrap'>
+                <h2 className='text-lg sm:text-xl font-bold text-green-900 mb-1 flex items-center gap-2 flex-wrap'>
                   <span>
                     {greeting}
                     {username && '，'}
