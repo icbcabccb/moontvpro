@@ -1068,7 +1068,52 @@ function HomeClient() {
                     ))}
                 </ScrollableRow>
               </section>
+{/* 独立流式页脚 */}
+<footer className="w-full mt-12 py-6 mb-20 md:mb-0 border-t border-[#333] bg-[#0a0a0a] text-gray-400 relative z-30">
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+      {/* 左侧 Logo 与 版权信息 */}
+      <div className="text-center md:text-left">
+        <div className="flex items-center justify-center md:justify-start">
+          <svg className="w-6 h-6 mr-2 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 15.75-2.489-2.489m0 0a3.375 3.375 0 1 0-4.773-4.773 3.375 3.375 0 0 0 4.774 4.774ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          <span className="text-red-500 font-bold text-lg">红月搜索</span>
+        </div>
+        <p className="text-gray-500 text-sm mt-2">
+          © {new Date().getFullYear()} 红月搜索-剧名搜索、在线视频神器。
+        </p>
+      </div>
 
+      {/* 右侧 免责声明与链接 */}
+      <div className="text-center md:text-right space-y-3">
+        <p className="text-gray-500 text-xs sm:text-sm max-w-md mx-auto md:ml-auto leading-relaxed">
+          免责声明：本站仅为视频搜索工具，不存储、上传或分发任何视频内容。所有视频均来自第三方API接口。如有侵权，请联系相关内容提供方。
+        </p>
+        <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-2 pt-1">
+          <Link href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">
+            关于红月
+          </Link>
+          <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
+            隐私政策
+          </Link>
+          <a href="https://200805.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+            网盘系统
+          </a>
+          <a href="https://timis.dpdns.org" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+            API中转服务
+          </a>
+          <a href="https://ctv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+            RedMoon-CTV
+          </a>
+          <a href="https://vtv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+            RedMoon-VTV
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
               {/* 热门短剧模块已按要求移除 */}
             </>
           )}
