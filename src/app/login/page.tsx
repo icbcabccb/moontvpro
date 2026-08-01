@@ -303,7 +303,7 @@ function LoginPageClient() {
     <Sparkles className='w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400 hidden' />
   </div>
 
-  <div className='text-xl font-bold bg-linear-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent'>
+  <h1 className='text-red-500 dark:text-red-400 tracking-tight text-2xl sm:text-3xl font-extrabold mb-1.5 drop-shadow-sm'>
     {siteName}
   </h1>
   <p className='text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium'>Welcome to you!</p>
