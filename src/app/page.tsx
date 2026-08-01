@@ -540,9 +540,9 @@ function HomeClient() {
 
       <div className='overflow-visible -mt-6 md:mt-0 pb-44 md:pb-36'>
         {/* 欢迎横幅 */}
-        <div className='mb-6 relative overflow-hidden rounded-xl bg-linear-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
+        <div className='mb-6 relative overflow-hidden rounded-xl bg-[#e0ffff] from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
           <div className='relative p-4 sm:p-5'>
-            <div className='absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-black/5'></div>
+            <div className='absolute inset-0 bg-[#e0ffff] from-white/5 via-transparent to-black/5'></div>
 
             <div className='relative z-10 flex items-center justify-between gap-4'>
               <div className='flex-1 min-w-0'>
