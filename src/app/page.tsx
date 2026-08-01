@@ -26,6 +26,7 @@ import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
+import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -810,7 +811,7 @@ function HomeClient() {
               />
             </section>
           ) : (
-            // 首页视图
+            // 首页视图（已移除 HeroBanner 模块）
             <>
               {/* 继续观看 */}
               <ContinueWatching />
@@ -1026,7 +1027,7 @@ function HomeClient() {
                           />
                         </div>
                       ))}
-                ScrollableRow>
+                </ScrollableRow>
               </section>
 
               {/* 热门综艺 */}
@@ -1065,10 +1066,10 @@ function HomeClient() {
                         />
                       </div>
                     ))}
-                ScrollableRow>
+                </ScrollableRow>
               </section>
 
-              {/* 热门短剧模块已按要求隐藏 */}
+              {/* 热门短剧模块已按要求移除 */}
             </>
           )}
         </div>
@@ -1107,9 +1108,9 @@ function HomeClient() {
           </div>
 
           {/* 版权声明及免责 */}
-          <div className='text-center md:text-right text-[18px] text-gray-400 leading-tight space-y-0.5'>
-            <div>© {new Date().getFullYear()} 红月搜索. All Rights Reserved.</div>
-            <div className='text-[15px] text-gray-400'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
+          <div className='text-center md:text-right text-[11px] text-gray-500 leading-tight space-y-0.5'>
+            <div>© {new Date().getFullYear()} 影视平台. All Rights Reserved.</div>
+            <div className='text-[10px] text-gray-600'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
           </div>
         </div>
       </footer>
