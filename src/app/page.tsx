@@ -1,10 +1,3 @@
-已为您将首页的**大图海报轮播组件模块 (`HeroBanner`)** 完全移除（包括组件导入以及对应 JSX 结构的删除）。
-
-其余的首页组件（继续观看、即将上映、热门电影、热门剧集、新番放送、热门综艺）以及上一轮添加的**固定黑色底部页脚**均完整保留。
-
-### 修改后的完整源代码
-
-```tsx
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-console */
 
 'use client';
@@ -1114,9 +1107,9 @@ function HomeClient() {
           </div>
 
           {/* 版权声明及免责 */}
-          <div className='text-center md:text-right text-[11px] text-gray-500 leading-tight space-y-0.5'>
+          <div className='text-center md:text-right text-[11px] text-gray-400 leading-tight space-y-0.5'>
             <div>© {new Date().getFullYear()} 影视平台. All Rights Reserved.</div>
-            <div className='text-[10px] text-gray-600'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
+            <div className='text-[10px] text-gray-400'>本站资源来自公开网络，仅供交流研究，不存储任何音视频文件。</div>
           </div>
         </div>
       </footer>
@@ -1131,5 +1124,3 @@ export default function Home() {
     </Suspense>
   );
 }
-
-```
