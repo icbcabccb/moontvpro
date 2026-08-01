@@ -1,15 +1,3 @@
-已为您移除了登录/注册页面底部的版本号及检查更新信息展示（去除了 `VersionDisplay` 组件及其相关依赖引入）。
-
-### 修改说明
-
-1. 删除了页面底部的 `<VersionDisplay/>` 组件渲染。
-2. 移除了顶部对版本和更新检测逻辑（`CURRENT_VERSION`、`checkForUpdates` 等）的引用，保持代码简洁规范。
-
----
-
-### 修改后的完整代码
-
-```tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 'use client';
@@ -491,5 +479,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-
-```
