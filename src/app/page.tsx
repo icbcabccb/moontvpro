@@ -1085,7 +1085,13 @@ function HomeClient() {
         </p>
       </div>
 
+      {/* 右侧 免责声明与链接 */}
         <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-2 pt-1">
+          <Link href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">
+            关于红月
+          </Link>
+          <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
+            隐私政策
           </Link>
           <a href="https://200805.xyz" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
             网盘系统
