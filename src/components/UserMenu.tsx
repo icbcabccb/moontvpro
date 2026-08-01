@@ -25,8 +25,6 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
-import { CURRENT_VERSION } from '@/lib/version';
-import { checkForUpdates, UpdateStatus } from '@/lib/version_check';
 import {
   getCachedWatchingUpdates,
   getDetailedWatchingUpdates,
@@ -41,7 +39,6 @@ import {
 } from '@/lib/db.client';
 import type { Favorite } from '@/lib/types';
 
-import { VersionPanel } from './VersionPanel';
 import VideoCard from './VideoCard';
 
 interface AuthInfo {
@@ -54,7 +51,6 @@ export const UserMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [isVersionPanelOpen, setIsVersionPanelOpen] = useState(false);
   const [isWatchingUpdatesOpen, setIsWatchingUpdatesOpen] = useState(false);
   const [isContinueWatchingOpen, setIsContinueWatchingOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
@@ -88,7 +84,6 @@ export const UserMenu: React.FC = () => {
       html.style.overflow = 'hidden';
 
       return () => {
-
         // 恢复所有原始样式
         body.style.overflow = originalBodyOverflow;
         html.style.overflow = originalHtmlOverflow;
@@ -180,10 +175,6 @@ export const UserMenu: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
-
-  // 版本检查相关状态
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
-  const [isChecking, setIsChecking] = useState(true);
 
   // 确保组件已挂载
   useEffect(() => {
@@ -356,22 +347,6 @@ export const UserMenu: React.FC = () => {
     }
   }, []);
 
-  // 版本检查
-  useEffect(() => {
-    const checkUpdate = async () => {
-      try {
-        const status = await checkForUpdates();
-        setUpdateStatus(status);
-      } catch (error) {
-        console.warn('版本检查失败:', error);
-      } finally {
-        setIsChecking(false);
-      }
-    };
-
-    checkUpdate();
-  }, []);
-
   // 获取观看更新信息
   useEffect(() => {
     console.log('UserMenu watching-updates 检查条件:', {
@@ -406,8 +381,6 @@ export const UserMenu: React.FC = () => {
       const forceInitialCheck = async () => {
         console.log('页面初始化，强制检查更新...');
         try {
-          // 🔧 修复：直接使用 forceRefresh=true，不再手动操作 localStorage
-          // 因为 kvrocks 模式使用内存缓存，删除 localStorage 无效
           await checkWatchingUpdates(true);
 
           // 更新UI
@@ -427,7 +400,7 @@ export const UserMenu: React.FC = () => {
         updateWatchingUpdates();
       }
 
-      // 🔧 修复：延迟1秒后在后台执行更新检查，避免阻塞页面初始加载
+      // 延迟1秒后在后台执行更新检查，避免阻塞页面初始加载
       setTimeout(() => {
         forceInitialCheck();
       }, 1000);
@@ -479,26 +452,23 @@ export const UserMenu: React.FC = () => {
 
       loadPlayRecords();
 
-      // 监听播放记录更新事件（修复删除记录后页面不立即更新的问题）
+      // 监听播放记录更新事件
       const handlePlayRecordsUpdate = () => {
         console.log('UserMenu: 播放记录更新，重新加载继续观看列表');
         loadPlayRecords();
       };
 
-      // 监听播放记录更新事件
       window.addEventListener('playRecordsUpdated', handlePlayRecordsUpdate);
 
-      // 🔥 新增：监听watching-updates事件，与ContinueWatching组件保持一致
+      // 监听watching-updates事件，与ContinueWatching组件保持一致
       const unsubscribeWatchingUpdates = subscribeToWatchingUpdatesEvent(() => {
         console.log('UserMenu: 收到watching-updates事件');
 
-        // 当检测到新集数更新时，强制刷新播放记录缓存确保数据同步
         const updates = getDetailedWatchingUpdates();
         if (updates && updates.hasUpdates && updates.updatedCount > 0) {
           console.log('UserMenu: 检测到新集数更新，强制刷新播放记录缓存');
           forceRefreshPlayRecordsCache();
 
-          // 短暂延迟后重新获取播放记录，确保缓存已刷新
           setTimeout(async () => {
             const freshRecords = await getAllPlayRecords();
             const recordsArray = Object.entries(freshRecords).map(([key, record]) => ({
@@ -519,7 +489,7 @@ export const UserMenu: React.FC = () => {
 
       return () => {
         window.removeEventListener('playRecordsUpdated', handlePlayRecordsUpdate);
-        unsubscribeWatchingUpdates(); // 🔥 清理watching-updates订阅
+        unsubscribeWatchingUpdates();
       };
     }
   }, [authInfo, storageType, enableContinueWatchingFilter, continueWatchingMinProgress, continueWatchingMaxProgress]);
@@ -547,13 +517,11 @@ export const UserMenu: React.FC = () => {
 
       loadFavorites();
 
-      // 监听收藏更新事件（修复删除收藏后页面不立即更新的问题）
       const handleFavoritesUpdate = () => {
         console.log('UserMenu: 收藏更新，重新加载收藏列表');
         loadFavorites();
       };
 
-      // 监听收藏更新事件
       window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
 
       return () => {
@@ -601,27 +569,21 @@ export const UserMenu: React.FC = () => {
     const willOpen = !isOpen;
     setIsOpen(willOpen);
 
-    // 如果是打开菜单，立即检查更新（不受缓存限制）
     if (willOpen && authInfo?.username && storageType !== 'localstorage') {
       console.log('打开菜单时强制检查更新...');
       try {
-        // 暂时清除缓存时间，强制检查一次
         const lastCheckTime = localStorage.getItem('moontv_last_update_check');
         localStorage.removeItem('moontv_last_update_check');
 
-        // 执行检查
         await checkWatchingUpdates();
 
-        // 恢复缓存时间（如果之前有的话）
         if (lastCheckTime) {
           localStorage.setItem('moontv_last_update_check', lastCheckTime);
         }
 
-        // 更新UI状态
         const updates = getDetailedWatchingUpdates();
         setWatchingUpdates(updates);
 
-        // 重新计算未读状态
         if (updates && (updates.updatedCount || 0) > 0) {
           const lastViewed = parseInt(localStorage.getItem('watchingUpdatesLastViewed') || '0');
           const currentTime = Date.now();
@@ -687,7 +649,6 @@ export const UserMenu: React.FC = () => {
   const handleWatchingUpdates = () => {
     setIsOpen(false);
     setIsWatchingUpdatesOpen(true);
-    // 标记为已读
     setHasUnreadUpdates(false);
     const currentTime = Date.now();
     localStorage.setItem('watchingUpdatesLastViewed', currentTime.toString());
@@ -715,25 +676,21 @@ export const UserMenu: React.FC = () => {
     setIsFavoritesOpen(false);
   };
 
-  // 从 key 中解析 source 和 id
   const parseKey = (key: string) => {
     const [source, id] = key.split('+');
     return { source, id };
   };
 
-  // 计算播放进度百分比
   const getProgress = (record: PlayRecord) => {
     if (record.total_time === 0) return 0;
     return (record.play_time / record.total_time) * 100;
   };
 
-  // 检查播放记录是否有新集数更新
   const getNewEpisodesCount = (record: PlayRecord & { key: string }): number => {
     if (!watchingUpdates || !watchingUpdates.updatedSeries) return 0;
 
     const { source, id } = parseKey(record.key);
 
-    // 在watchingUpdates中查找匹配的剧集
     const matchedSeries = watchingUpdates.updatedSeries.find(series =>
       series.sourceKey === source &&
       series.videoId === id &&
@@ -761,7 +718,6 @@ export const UserMenu: React.FC = () => {
   const handleSubmitChangePassword = async () => {
     setPasswordError('');
 
-    // 验证密码
     if (!newPassword) {
       setPasswordError('新密码不得为空');
       return;
@@ -792,7 +748,6 @@ export const UserMenu: React.FC = () => {
         return;
       }
 
-      // 修改成功，关闭弹窗并登出
       setIsChangePasswordOpen(false);
       await handleLogout();
     } catch (error) {
@@ -811,7 +766,6 @@ export const UserMenu: React.FC = () => {
     setIsSettingsOpen(false);
   };
 
-  // 设置相关的处理函数
   const handleAggregateToggle = (value: boolean) => {
     setDefaultAggregateSearch(value);
     if (typeof window !== 'undefined') {
@@ -879,7 +833,6 @@ export const UserMenu: React.FC = () => {
     setEnableAutoSkip(value);
     if (typeof window !== 'undefined') {
       localStorage.setItem('enableAutoSkip', JSON.stringify(value));
-      // 🔑 通知 SkipController localStorage 已更新
       window.dispatchEvent(new Event('localStorageChanged'));
     }
   };
@@ -888,7 +841,6 @@ export const UserMenu: React.FC = () => {
     setEnableAutoNextEpisode(value);
     if (typeof window !== 'undefined') {
       localStorage.setItem('enableAutoNextEpisode', JSON.stringify(value));
-      // 🔑 通知 SkipController localStorage 已更新
       window.dispatchEvent(new Event('localStorageChanged'));
     }
   };
@@ -928,7 +880,6 @@ export const UserMenu: React.FC = () => {
     }
   };
 
-  // 获取感谢信息
   const getThanksInfo = (dataSource: string) => {
     switch (dataSource) {
       case 'cors-proxy-zwei':
@@ -995,37 +946,20 @@ export const UserMenu: React.FC = () => {
     }
   };
 
-  // 检查是否显示管理面板按钮
   const showAdminPanel =
     authInfo?.role === 'owner' || authInfo?.role === 'admin';
 
-  // 检查是否显示修改密码按钮
   const showChangePassword =
     authInfo?.role !== 'owner' && storageType !== 'localstorage';
 
-  // 检查是否显示播放统计按钮（所有登录用户，且非localstorage存储）
   const showPlayStats = authInfo?.username && storageType !== 'localstorage';
 
-  // 检查是否显示更新提醒按钮（登录用户且非localstorage存储就显示）
   const showWatchingUpdates = authInfo?.username && storageType !== 'localstorage';
 
-  // 检查是否有实际更新（用于显示红点）- 只检查新剧集更新
   const hasActualUpdates = watchingUpdates && (watchingUpdates.updatedCount || 0) > 0;
 
-  // 计算更新数量（只统计新剧集更新）
   const totalUpdates = watchingUpdates?.updatedCount || 0;
 
-  // 调试信息
-  console.log('UserMenu 更新提醒调试:', {
-    username: authInfo?.username,
-    storageType,
-    watchingUpdates,
-    showWatchingUpdates,
-    hasActualUpdates,
-    totalUpdates
-  });
-
-  // 角色中文映射
   const getRoleText = (role?: string) => {
     switch (role) {
       case 'owner':
@@ -1042,13 +976,11 @@ export const UserMenu: React.FC = () => {
   // 菜单面板内容
   const menuPanel = (
     <>
-      {/* 背景遮罩 - 普通菜单无需模糊 */}
       <div
         className='fixed inset-0 bg-transparent z-1000'
         onClick={handleCloseMenu}
       />
 
-      {/* 菜单面板 */}
       <div className='fixed top-14 right-4 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-xl z-1001 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden select-none'>
         {/* 用户信息区域 */}
         <div className='px-3 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-linear-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-800/50'>
@@ -1212,34 +1144,6 @@ export const UserMenu: React.FC = () => {
             <LogOut className='w-4 h-4' />
             <span className='font-medium'>登出</span>
           </button>
-
-          {/* 分割线 */}
-          <div className='my-1 border-t border-gray-200 dark:border-gray-700'></div>
-
-          {/* 版本信息 */}
-          <button
-            onClick={() => {
-              setIsVersionPanelOpen(true);
-              handleCloseMenu();
-            }}
-            className='w-full px-3 py-2 text-center flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-xs'
-          >
-            <div className='flex items-center gap-1'>
-              <span className='font-mono'>v{CURRENT_VERSION}</span>
-              {!isChecking &&
-                updateStatus &&
-                updateStatus !== UpdateStatus.FETCH_FAILED && (
-                  <div
-                    className={`w-2 h-2 rounded-full -translate-y-2 ${updateStatus === UpdateStatus.HAS_UPDATE
-                      ? 'bg-yellow-500'
-                      : updateStatus === UpdateStatus.NO_UPDATE
-                        ? 'bg-green-400'
-                        : ''
-                      }`}
-                  ></div>
-                )}
-            </div>
-          </button>
         </div>
       </div>
     </>
@@ -1248,16 +1152,13 @@ export const UserMenu: React.FC = () => {
   // 设置面板内容
   const settingsPanel = (
     <>
-      {/* 背景遮罩 */}
       <div
         className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
         onClick={handleCloseSettings}
         onTouchMove={(e) => {
-          // 只阻止滚动，允许其他触摸事件
           e.preventDefault();
         }}
         onWheel={(e) => {
-          // 阻止滚轮滚动
           e.preventDefault();
         }}
         style={{
@@ -1265,20 +1166,17 @@ export const UserMenu: React.FC = () => {
         }}
       />
 
-      {/* 设置面板 */}
       <div
         className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-xl z-1001 flex flex-col'
       >
-        {/* 内容容器 - 独立的滚动区域 */}
         <div
           className='flex-1 p-6 overflow-y-auto'
           data-panel-content
           style={{
-            touchAction: 'pan-y', // 只允许垂直滚动
-            overscrollBehavior: 'contain', // 防止滚动冒泡
+            touchAction: 'pan-y',
+            overscrollBehavior: 'contain',
           }}
         >
-          {/* 标题栏 */}
           <div className='flex items-center justify-between mb-6'>
             <div className='flex items-center gap-3'>
               <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -1301,7 +1199,6 @@ export const UserMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* 设置项 */}
           <div className='space-y-6'>
             {/* 豆瓣数据源选择 */}
             <div className='space-y-3'>
@@ -1314,7 +1211,6 @@ export const UserMenu: React.FC = () => {
                 </p>
               </div>
               <div className='relative' data-dropdown='douban-datasource'>
-                {/* 自定义下拉选择框 */}
                 <button
                   type='button'
                   onClick={() => setIsDoubanDropdownOpen(!isDoubanDropdownOpen)}
@@ -1327,7 +1223,6 @@ export const UserMenu: React.FC = () => {
                   }
                 </button>
 
-                {/* 下拉箭头 */}
                 <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                   <ChevronDown
                     className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isDoubanDropdownOpen ? 'rotate-180' : ''
@@ -1335,7 +1230,6 @@ export const UserMenu: React.FC = () => {
                   />
                 </div>
 
-                {/* 下拉选项列表 */}
                 {isDoubanDropdownOpen && (
                   <div className='absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto'>
                     {doubanDataSourceOptions.map((option) => (
@@ -1361,7 +1255,6 @@ export const UserMenu: React.FC = () => {
                 )}
               </div>
 
-              {/* 感谢信息 */}
               {getThanksInfo(doubanDataSource) && (
                 <div className='mt-3'>
                   <button
@@ -1380,7 +1273,6 @@ export const UserMenu: React.FC = () => {
               )}
             </div>
 
-            {/* 豆瓣代理地址设置 - 仅在选择自定义代理时显示 */}
             {doubanDataSource === 'custom' && (
               <div className='space-y-3'>
                 <div>
@@ -1401,7 +1293,6 @@ export const UserMenu: React.FC = () => {
               </div>
             )}
 
-            {/* 分割线 */}
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
 
             {/* 豆瓣图片代理设置 */}
@@ -1415,7 +1306,6 @@ export const UserMenu: React.FC = () => {
                 </p>
               </div>
               <div className='relative' data-dropdown='douban-image-proxy'>
-                {/* 自定义下拉选择框 */}
                 <button
                   type='button'
                   onClick={() =>
@@ -1432,7 +1322,6 @@ export const UserMenu: React.FC = () => {
                   }
                 </button>
 
-                {/* 下拉箭头 */}
                 <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                   <ChevronDown
                     className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isDoubanDropdownOpen ? 'rotate-180' : ''
@@ -1440,7 +1329,6 @@ export const UserMenu: React.FC = () => {
                   />
                 </div>
 
-                {/* 下拉选项列表 */}
                 {isDoubanImageProxyDropdownOpen && (
                   <div className='absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto'>
                     {doubanImageProxyTypeOptions.map((option) => (
@@ -1466,7 +1354,6 @@ export const UserMenu: React.FC = () => {
                 )}
               </div>
 
-              {/* 感谢信息 */}
               {getThanksInfo(doubanImageProxyType) && (
                 <div className='mt-3'>
                   <button
@@ -1488,7 +1375,6 @@ export const UserMenu: React.FC = () => {
               )}
             </div>
 
-            {/* 豆瓣图片代理地址设置 - 仅在选择自定义代理时显示 */}
             {doubanImageProxyType === 'custom' && (
               <div className='space-y-3'>
                 <div>
@@ -1511,7 +1397,6 @@ export const UserMenu: React.FC = () => {
               </div>
             )}
 
-            {/* 分割线 */}
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
 
             {/* 默认聚合搜索结果 */}
@@ -1610,10 +1495,9 @@ export const UserMenu: React.FC = () => {
               </label>
             </div>
 
-            {/* 分割线 */}
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
 
-            {/* 播放缓冲优化 - 卡片式选择器 */}
+            {/* 播放缓冲优化 */}
             <div className='space-y-3'>
               <div>
                 <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -1624,7 +1508,6 @@ export const UserMenu: React.FC = () => {
                 </p>
               </div>
 
-              {/* 模式选择卡片 */}
               <div className='space-y-2'>
                 {bufferModeOptions.map((option) => {
                   const isSelected = playerBufferMode === option.value;
@@ -1665,7 +1548,6 @@ export const UserMenu: React.FC = () => {
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm bg-white dark:bg-gray-800'
                       }`}
                     >
-                      {/* 图标 */}
                       <div
                         className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-300 ${
                           isSelected
@@ -1676,7 +1558,6 @@ export const UserMenu: React.FC = () => {
                         {option.icon}
                       </div>
 
-                      {/* 文字内容 */}
                       <div className='flex-1 min-w-0'>
                         <div className='flex items-center gap-2'>
                           <span
@@ -1694,7 +1575,6 @@ export const UserMenu: React.FC = () => {
                         </p>
                       </div>
 
-                      {/* 选中标记 */}
                       <div
                         className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${
                           isSelected
@@ -1720,7 +1600,6 @@ export const UserMenu: React.FC = () => {
               </div>
             </div>
 
-            {/* 分割线 */}
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
 
             {/* 跳过片头片尾设置 */}
@@ -1734,7 +1613,6 @@ export const UserMenu: React.FC = () => {
                 </p>
               </div>
 
-              {/* 自动跳过开关 */}
               <div className='flex items-center justify-between'>
                 <div>
                   <h5 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -1758,7 +1636,6 @@ export const UserMenu: React.FC = () => {
                 </label>
               </div>
 
-              {/* 自动播放下一集开关 */}
               <div className='flex items-center justify-between'>
                 <div>
                   <h5 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -1782,7 +1659,6 @@ export const UserMenu: React.FC = () => {
                 </label>
               </div>
 
-              {/* 清空继续观看确认开关 */}
               <div className='flex items-center justify-between'>
                 <div>
                   <h5 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -1806,13 +1682,11 @@ export const UserMenu: React.FC = () => {
                 </label>
               </div>
 
-              {/* 提示信息 */}
               <div className='text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800'>
                 💡 这些设置会作为新视频的默认配置。对于已配置的视频，请在播放页面的"跳过设置"中单独调整。
               </div>
             </div>
 
-            {/* 分割线 */}
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
 
             {/* 继续观看筛选设置 */}
@@ -1840,7 +1714,6 @@ export const UserMenu: React.FC = () => {
                 </label>
               </div>
 
-              {/* 进度范围设置 - 仅在启用筛选时显示 */}
               {enableContinueWatchingFilter && (
                 <>
                   <div>
@@ -1850,7 +1723,6 @@ export const UserMenu: React.FC = () => {
                   </div>
 
                   <div className='grid grid-cols-2 gap-4'>
-                    {/* 最小进度设置 */}
                     <div>
                       <label className='block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>
                         最小进度 (%)
@@ -1868,7 +1740,6 @@ export const UserMenu: React.FC = () => {
                       />
                     </div>
 
-                    {/* 最大进度设置 */}
                     <div>
                       <label className='block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>
                         最大进度 (%)
@@ -1887,14 +1758,12 @@ export const UserMenu: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 当前范围提示 */}
                   <div className='text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg'>
                     当前设置：显示播放进度在 {continueWatchingMinProgress}% - {continueWatchingMaxProgress}% 之间的内容
                   </div>
                 </>
               )}
 
-              {/* 关闭筛选时的提示 */}
               {!enableContinueWatchingFilter && (
                 <div className='text-xs text-gray-500 dark:text-gray-400 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800'>
                   筛选已关闭：将显示所有播放时间超过2分钟的内容
@@ -1902,7 +1771,6 @@ export const UserMenu: React.FC = () => {
               )}
             </div>
 
-            {/* 分割线 */}
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
 
             {/* 下载格式设置 */}
@@ -1916,7 +1784,6 @@ export const UserMenu: React.FC = () => {
                 </p>
               </div>
 
-              {/* 格式选择 */}
               <div className='grid grid-cols-2 gap-3'>
                 <button
                   type='button'
@@ -1981,14 +1848,12 @@ export const UserMenu: React.FC = () => {
                 </button>
               </div>
 
-              {/* 格式说明 */}
               <div className='text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800'>
                 💡 TS格式下载速度快，兼容性好；MP4格式经过转码，体积略小，兼容性更广
               </div>
             </div>
           </div>
 
-          {/* 底部说明 */}
           <div className='mt-6 pt-4 border-t border-gray-200 dark:border-gray-700'>
             <p className='text-xs text-gray-500 dark:text-gray-400 text-center'>
               这些设置保存在本地浏览器中
@@ -2002,16 +1867,13 @@ export const UserMenu: React.FC = () => {
   // 修改密码面板内容
   const changePasswordPanel = (
     <>
-      {/* 背景遮罩 */}
       <div
         className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
         onClick={handleCloseChangePassword}
         onTouchMove={(e) => {
-          // 只阻止滚动，允许其他触摸事件
           e.preventDefault();
         }}
         onWheel={(e) => {
-          // 阻止滚轮滚动
           e.preventDefault();
         }}
         style={{
@@ -2019,23 +1881,19 @@ export const UserMenu: React.FC = () => {
         }}
       />
 
-      {/* 修改密码面板 */}
       <div
         className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-xl z-1001 overflow-hidden'
       >
-        {/* 内容容器 - 独立的滚动区域 */}
         <div
           className='h-full p-6'
           data-panel-content
           onTouchMove={(e) => {
-            // 阻止事件冒泡到遮罩层，但允许内部滚动
             e.stopPropagation();
           }}
           style={{
-            touchAction: 'auto', // 允许所有触摸操作
+            touchAction: 'auto',
           }}
         >
-          {/* 标题栏 */}
           <div className='flex items-center justify-between mb-6'>
             <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
               修改密码
@@ -2049,9 +1907,7 @@ export const UserMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* 表单 */}
           <div className='space-y-4'>
-            {/* 新密码输入 */}
             <div>
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 新密码
@@ -2066,7 +1922,6 @@ export const UserMenu: React.FC = () => {
               />
             </div>
 
-            {/* 确认密码输入 */}
             <div>
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 确认密码
@@ -2081,7 +1936,6 @@ export const UserMenu: React.FC = () => {
               />
             </div>
 
-            {/* 错误信息 */}
             {passwordError && (
               <div className='text-red-500 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-800'>
                 {passwordError}
@@ -2089,7 +1943,6 @@ export const UserMenu: React.FC = () => {
             )}
           </div>
 
-          {/* 操作按钮 */}
           <div className='flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700'>
             <button
               onClick={handleCloseChangePassword}
@@ -2107,7 +1960,6 @@ export const UserMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* 底部说明 */}
           <div className='mt-4 pt-4 border-t border-gray-200 dark:border-gray-700'>
             <p className='text-xs text-gray-500 dark:text-gray-400 text-center'>
               修改密码后需要重新登录
@@ -2121,7 +1973,6 @@ export const UserMenu: React.FC = () => {
   // 更新剧集海报弹窗内容
   const watchingUpdatesPanel = (
     <>
-      {/* 背景遮罩 */}
       <div
         className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
         onClick={handleCloseWatchingUpdates}
@@ -2136,11 +1987,9 @@ export const UserMenu: React.FC = () => {
         }}
       />
 
-      {/* 更新弹窗 */}
       <div
         className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-xl z-1001 flex flex-col'
       >
-        {/* 内容容器 - 独立的滚动区域 */}
         <div
           className='flex-1 p-6 overflow-y-auto'
           data-panel-content
@@ -2149,7 +1998,6 @@ export const UserMenu: React.FC = () => {
             overscrollBehavior: 'contain',
           }}
         >
-          {/* 标题栏 */}
           <div className='flex items-center justify-between mb-6'>
             <div className='flex items-center gap-3'>
               <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -2173,9 +2021,7 @@ export const UserMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* 更新列表 */}
           <div className='space-y-8'>
-            {/* 没有更新时的提示 */}
             {!hasActualUpdates && (
               <div className='text-center py-8'>
                 <div className='text-gray-500 dark:text-gray-400 text-sm'>
@@ -2186,7 +2032,6 @@ export const UserMenu: React.FC = () => {
                 </div>
               </div>
             )}
-            {/* 有新集数的剧集 */}
             {watchingUpdates && watchingUpdates.updatedSeries.filter(series => series.hasNewEpisode).length > 0 && (
               <div>
                 <div className='flex items-center gap-2 mb-4'>
@@ -2221,7 +2066,6 @@ export const UserMenu: React.FC = () => {
                             from="playrecord"
                           />
                         </div>
-                        {/* 新集数徽章 - Netflix 统一风格 */}
                         <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
                           +{series.newEpisodes}
                         </div>
@@ -2230,10 +2074,8 @@ export const UserMenu: React.FC = () => {
                 </div>
               </div>
             )}
-
           </div>
 
-          {/* 底部说明 */}
           <div className='mt-6 pt-4 border-t border-gray-200 dark:border-gray-700'>
             <p className='text-xs text-gray-500 dark:text-gray-400 text-center'>
               点击海报即可观看新更新的剧集
@@ -2247,7 +2089,6 @@ export const UserMenu: React.FC = () => {
   // 继续观看弹窗内容
   const continueWatchingPanel = (
     <>
-      {/* 背景遮罩 */}
       <div
         className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
         onClick={handleCloseContinueWatching}
@@ -2262,7 +2103,6 @@ export const UserMenu: React.FC = () => {
         }}
       />
 
-      {/* 继续观看弹窗 */}
       <div
         className='fixed inset-x-4 top-1/2 transform -translate-y-1/2 max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-1001 max-h-[80vh] overflow-y-auto'
         onClick={(e) => e.stopPropagation()}
@@ -2281,7 +2121,6 @@ export const UserMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* 播放记录网格 */}
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
             {playRecords.map((record) => {
               const { source, id } = parseKey(record.key);
@@ -2305,13 +2144,11 @@ export const UserMenu: React.FC = () => {
                       remarks={record.remarks}
                     />
                   </div>
-                  {/* 新集数徽章 - Netflix 统一风格 */}
                   {newEpisodesCount > 0 && (
                     <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
                       +{newEpisodesCount}
                     </div>
                   )}
-                  {/* 进度指示器 */}
                   {getProgress(record) > 0 && (
                     <div className='absolute bottom-2 left-2 right-2 bg-black/50 rounded px-2 py-1'>
                       <div className='flex items-center gap-1'>
@@ -2332,7 +2169,6 @@ export const UserMenu: React.FC = () => {
             })}
           </div>
 
-          {/* 空状态 */}
           {playRecords.length === 0 && (
             <div className='text-center py-12'>
               <PlayCircle className='w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4' />
@@ -2346,7 +2182,6 @@ export const UserMenu: React.FC = () => {
             </div>
           )}
 
-          {/* 底部说明 */}
           <div className='mt-6 pt-4 border-t border-gray-200 dark:border-gray-700'>
             <p className='text-xs text-gray-500 dark:text-gray-400 text-center'>
               点击海报即可继续观看
@@ -2360,7 +2195,6 @@ export const UserMenu: React.FC = () => {
   // 我的收藏弹窗内容
   const favoritesPanel = (
     <>
-      {/* 背景遮罩 */}
       <div
         className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
         onClick={handleCloseFavorites}
@@ -2375,7 +2209,6 @@ export const UserMenu: React.FC = () => {
         }}
       />
 
-      {/* 收藏弹窗 */}
       <div
         className='fixed inset-x-4 top-1/2 transform -translate-y-1/2 max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-1001 max-h-[80vh] overflow-y-auto'
         onClick={(e) => e.stopPropagation()}
@@ -2394,12 +2227,10 @@ export const UserMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* 收藏网格 */}
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
             {favorites.map((favorite) => {
               const { source, id } = parseKey(favorite.key);
 
-              // 智能计算即将上映状态
               let calculatedRemarks = favorite.remarks;
               let isNewRelease = false;
 
@@ -2409,11 +2240,9 @@ export const UserMenu: React.FC = () => {
                 const releaseDate = new Date(favorite.releaseDate);
                 const daysDiff = Math.ceil((releaseDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-                // 根据天数差异动态更新显示文字
                 if (daysDiff < 0) {
                   const daysAgo = Math.abs(daysDiff);
                   calculatedRemarks = `已上映${daysAgo}天`;
-                  // 7天内上映的标记为新上映
                   if (daysAgo <= 7) {
                     isNewRelease = true;
                   }
@@ -2441,8 +2270,6 @@ export const UserMenu: React.FC = () => {
                     remarks={calculatedRemarks}
                     releaseDate={favorite.releaseDate}
                   />
-                  {/* 收藏心形图标 - 隐藏，使用VideoCard内部的hover爱心 */}
-                  {/* 新上映高亮标记 - Netflix 统一风格 - 7天内上映的显示 */}
                   {isNewRelease && (
                     <div className='absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-md shadow-lg animate-pulse z-40'>
                       新上映
@@ -2453,7 +2280,6 @@ export const UserMenu: React.FC = () => {
             })}
           </div>
 
-          {/* 空状态 */}
           {favorites.length === 0 && (
             <div className='text-center py-12'>
               <Heart className='w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4' />
@@ -2464,7 +2290,6 @@ export const UserMenu: React.FC = () => {
             </div>
           )}
 
-          {/* 底部说明 */}
           <div className='mt-6 pt-4 border-t border-gray-200 dark:border-gray-700'>
             <p className='text-xs text-gray-500 dark:text-gray-400 text-center'>
               点击海报即可进入详情页面
@@ -2488,8 +2313,8 @@ export const UserMenu: React.FC = () => {
 
           <User className='w-full h-full relative z-10 group-hover:scale-110 transition-transform duration-300' />
         </button>
-        {/* 统一更新提醒点：版本更新或剧集更新都显示橙色点 */}
-        {((updateStatus === UpdateStatus.HAS_UPDATE) || (hasUnreadUpdates && totalUpdates > 0)) && (
+        {/* 更新提醒点：剧集更新显示橙色点 */}
+        {hasUnreadUpdates && totalUpdates > 0 && (
           <div className='absolute top-[2px] right-[2px] w-2 h-2 bg-yellow-500 rounded-full animate-pulse shadow-lg shadow-yellow-500/50'></div>
         )}
       </div>
@@ -2519,12 +2344,6 @@ export const UserMenu: React.FC = () => {
       {isFavoritesOpen &&
         mounted &&
         createPortal(favoritesPanel, document.body)}
-
-      {/* 版本面板 */}
-      <VersionPanel
-        isOpen={isVersionPanelOpen}
-        onClose={() => setIsVersionPanelOpen(false)}
-      />
     </>
   );
 };
