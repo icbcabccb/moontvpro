@@ -26,6 +26,7 @@ import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
+import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -537,7 +538,7 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-6 md:mt-0 pb-32 md:pb-safe-bottom'>
+      <div className='overflow-visible -mt-6 md:mt-0 pb-44 md:pb-36'>
         {/* 欢迎横幅 */}
         <div className='mb-6 relative overflow-hidden rounded-xl bg-linear-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
           <div className='relative p-4 sm:p-5'>
@@ -1068,7 +1069,7 @@ function HomeClient() {
                 </ScrollableRow>
               </section>
 
-              {/* 热门短剧首页模块移除 */}
+              {/* 热门短剧模块已按要求移除 */}
             </>
           )}
         </div>
