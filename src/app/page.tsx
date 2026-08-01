@@ -537,8 +537,8 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-6 md:mt-0 pb-32 md:pb-safe-bottom'>
-        {/* 欢迎横幅 */}
+      <div className='overflow-visible -mt-6 md:mt-0 pb-16 md:pb-safe-bottom'>
+        {/* 欢迎横幅 - 现代化精简设计 */}
         <div className='mb-6 relative overflow-hidden rounded-xl bg-linear-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
           <div className='relative p-4 sm:p-5'>
             <div className='absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-black/5'></div>
@@ -810,8 +810,70 @@ function HomeClient() {
               />
             </section>
           ) : (
-            // 首页视图（已移除 HeroBanner 模块）
+            // 首页视图
             <>
+              {/* Hero Banner 轮播 */}
+              {!loading && (hotMovies.length > 0 || hotTvShows.length > 0 || hotVarietyShows.length > 0 || hotShortDramas.length > 0) && (
+                <section className='mb-8'>
+                  <HeroBanner
+                    items={[
+                      ...hotMovies.slice(0, 2).map((movie) => ({
+                        id: movie.id,
+                        title: movie.title,
+                        poster: movie.poster,
+                        backdrop: movie.backdrop,
+                        trailerUrl: movie.trailerUrl,
+                        description: movie.plot_summary,
+                        year: movie.year,
+                        rate: movie.rate,
+                        douban_id: Number(movie.id),
+                        type: 'movie',
+                      })),
+                      ...hotTvShows.slice(0, 2).map((show) => ({
+                        id: show.id,
+                        title: show.title,
+                        poster: show.poster,
+                        backdrop: show.backdrop,
+                        trailerUrl: show.trailerUrl,
+                        description: show.plot_summary,
+                        year: show.year,
+                        rate: show.rate,
+                        douban_id: Number(show.id),
+                        type: 'tv',
+                      })),
+                      ...hotVarietyShows.slice(0, 1).map((show) => ({
+                        id: show.id,
+                        title: show.title,
+                        poster: show.poster,
+                        backdrop: show.backdrop,
+                        trailerUrl: show.trailerUrl,
+                        description: show.plot_summary,
+                        year: show.year,
+                        rate: show.rate,
+                        douban_id: Number(show.id),
+                        type: 'variety',
+                      })),
+                      ...hotAnime.slice(0, 1).map((anime) => ({
+                        id: anime.id,
+                        title: anime.title,
+                        poster: anime.poster,
+                        backdrop: anime.backdrop,
+                        trailerUrl: anime.trailerUrl,
+                        description: anime.plot_summary,
+                        year: anime.year,
+                        rate: anime.rate,
+                        douban_id: Number(anime.id),
+                        type: 'anime',
+                      }))
+                    ]}
+                    autoPlayInterval={8000}
+                    showControls={true}
+                    showIndicators={true}
+                    enableVideo={true}
+                  />
+                </section>
+              )}
+
               {/* 继续观看 */}
               <ContinueWatching />
 
@@ -1068,36 +1130,59 @@ function HomeClient() {
                 </ScrollableRow>
               </section>
 
-              {/* 热门短剧 */}
-              <section className='mb-8'>
-                <div className='mb-4 flex items-center justify-between'>
-                  <SectionTitle title="热门短剧" icon={Play} iconColor="text-orange-500" />
-                  <Link
-                    href='/shortdrama'
-                    className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
-                  >
-                    查看更多
-                    <ChevronRight className='w-4 h-4 ml-1' />
-                  </Link>
-                </div>
-                <ScrollableRow enableVirtualization={true}>
-                  {loading
-                    ? Array.from({ length: 8 }).map((_, index) => (
-                      <SkeletonCard key={index} />
-                    ))
-                    : hotShortDramas.map((drama, index) => (
-                      <ShortDramaCard
-                        key={index}
-                        drama={drama}
-                        className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
-                      />
-                    ))}
-                </ScrollableRow>
-              </section>
+              {/* 热门短剧模块已按要求隐藏/移除 */}
             </>
           )}
         </div>
       </div>
+
+      {/* 独立固定黑色页脚 */}
+      <footer className='w-full bg-black border-t border-zinc-800/80 py-8 px-4 sm:px-8 text-xs text-gray-400 mt-12 relative z-20'>
+        <div className='max-w-7xl mx-auto space-y-6'>
+          {/* 友情链接区域 (8个外链) */}
+          <div className='space-y-2.5'>
+            <h4 className='text-sm font-semibold text-gray-200 border-l-2 border-emerald-500 pl-2.5'>
+              友情链接
+            </h4>
+            <div className='flex flex-wrap gap-x-6 gap-y-2.5 text-gray-400 pt-1'>
+              <a href='https://movie.douban.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                豆瓣电影
+              </a>
+              <a href='https://bangumi.tv' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                Bangumi 番组计划
+              </a>
+              <a href='https://www.themoviedb.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                TMDB 影视库
+              </a>
+              <a href='https://github.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                GitHub 开源社区
+              </a>
+              <a href='https://vercel.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                Vercel 托管
+              </a>
+              <a href='https://www.cloudflare.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                Cloudflare 网络
+              </a>
+              <a href='https://nextjs.org' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                Next.js 框架
+              </a>
+              <a href='https://tailwindcss.com' target='_blank' rel='noopener noreferrer' className='hover:text-emerald-400 transition-colors'>
+                Tailwind CSS
+              </a>
+            </div>
+          </div>
+
+          {/* 版权及免责信息 */}
+          <div className='pt-4 border-t border-zinc-900 text-center sm:text-left space-y-1.5 text-gray-500'>
+            <p className='text-gray-400 font-medium'>
+              © {new Date().getFullYear()} 影视聚合平台. All Rights Reserved.
+            </p>
+            <p className='text-[11px] text-gray-600 leading-relaxed'>
+              免责声明：本站所有影视资源均来源于互联网第三方公开接口，仅供个人学习交流及测试研究使用。本平台不提供任何音视频文件的存储、上传或制作服务。
+            </p>
+          </div>
+        </div>
+      </footer>
     </PageLayout>
   );
 }
