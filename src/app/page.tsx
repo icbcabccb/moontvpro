@@ -1068,6 +1068,7 @@ function HomeClient() {
                     ))}
                 </ScrollableRow>
               </section>
+              
 {/* 独立流式页脚 */}
 <footer className="w-full mt-12 py-6 mb-20 md:mb-0 border-t border-[#333] bg-[#0a0a0a] text-gray-400 relative z-30">
   <div className="max-w-7xl mx-auto px-4">
@@ -1086,6 +1087,10 @@ function HomeClient() {
       </div>
 
       {/* 右侧 免责声明与链接 */}
+      <div className="text-center md:text-right space-y-3">
+        <p className="text-gray-500 text-xs sm:text-sm max-w-md mx-auto md:ml-auto leading-relaxed">
+          免责声明：本站仅为视频搜索工具，不存储、上传或分发任何视频内容。所有视频均来自第三方API接口。如有侵权，请联系相关内容提供方。
+        </p>
         <div className="flex flex-wrap justify-center md:justify-end gap-x-4 gap-y-2 pt-1">
           <Link href="/about" className="text-gray-400 hover:text-white text-sm transition-colors">
             关于红月
