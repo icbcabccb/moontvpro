@@ -37,7 +37,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
       icon: Home,
       label: '首页',
       href: '/',
-      color: 'text-red-500',
+      color: 'text-green-500',
       gradient: 'from-green-500 to-emerald-500',
     },
     {
@@ -139,9 +139,9 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
       <nav className='hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50'>
         <div className='max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
-            {/* Logo - 自定义修改了字体颜色(红紫蓝渐变)、字号(2xl)和字间距(tracking-wide) */}
+            {/* Logo */}
             <FastLink href='/' className='shrink-0'>
-              <div className='text-xl font-bold bg-linear-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent'>
+              <div className='text-2xl font-black tracking-wide bg-linear-to-r from-red-500 via-orange-500 to-yellow-400 bg-clip-text text-transparent'>
                 {siteName}
               </div>
             </FastLink>
@@ -149,55 +149,48 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
             {/* Navigation Items */}
             <div className='flex items-center justify-center gap-1 lg:gap-2 overflow-x-auto scrollbar-hide flex-1 px-4'>
               {menuItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.href);
+                const Icon = item.icon;
+                const active = isActive(item.href);
 
-              return (
-                <FastLink
-                  key={item.label}
-                  href={item.href}
-                  useTransitionNav
-                  onClick={() => setActive(item.href)}
-                  className='group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 whitespace-nowrap shrink-0'
-                >
-                  {/* Active indicator */}
-                  {active && (
-                    <div
-                      className={`absolute inset-0 bg-linear-to-r ${item.gradient} opacity-10 rounded-full animate-pulse`}
-                    />
-                  )}
-
-                  {/* Icon */}
-                  <div className='relative'>
-                    <Icon
-                      className={`w-5 h-5 transition-all duration-300 ${
-                        active
-                          ? item.color
-                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'
-                      } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
-                    />
-                  </div>
-
-                  {/* Label */}
-                  <span
-                    className={`text-sm font-medium transition-all duration-300 ${
-                      active
-                        ? `${item.color} font-semibold`
-                        : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
-                    }`}
+                return (
+                  <FastLink
+                    key={item.label}
+                    href={item.href}
+                    useTransitionNav
+                    onClick={() => setActive(item.href)}
+                    className='group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 whitespace-nowrap shrink-0'
                   >
-                    {item.label}
-                  </span>
+                    {/* Active indicator (背景高亮) */}
+                    {active && (
+                      <div
+                        className={`absolute inset-0 bg-linear-to-r ${item.gradient} opacity-10 rounded-full animate-pulse`}
+                      />
+                    )}
 
-                  {/* Bottom active border */}
-                  {active && (
-                    <div
-                      className={`absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r ${item.gradient} rounded-full`}
-                    />
-                  )}
-                </FastLink>
-              );
-            })}
+                    {/* Icon */}
+                    <div className='relative'>
+                      <Icon
+                        className={`w-5 h-5 transition-all duration-300 ${
+                          active
+                            ? item.color
+                            : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'
+                        } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
+                      />
+                    </div>
+
+                    {/* Label */}
+                    <span
+                      className={`text-sm font-medium transition-all duration-300 ${
+                        active
+                          ? `${item.color} font-semibold`
+                          : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </FastLink>
+                );
+              })}
             </div>
 
             {/* Right Side Actions - ✨ AI Button, Theme Toggle & User Menu */}
