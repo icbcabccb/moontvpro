@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client';
 
 import { Sparkles } from 'lucide-react';
@@ -18,7 +20,7 @@ import { UserMenu } from './UserMenu';
 interface PageLayoutProps {
   children: React.ReactNode;
   activePath?: string;
-  useModernNav?: boolean; // 新增：是否使用2025现代化导航
+  useModernNav?: boolean;
 }
 
 const PageLayout = ({
@@ -76,7 +78,7 @@ const PageLayout = ({
           {/* 移动端头部 - Logo和用户菜单 */}
           <div className='md:hidden fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm'>
             <div className='flex items-center justify-between h-11 px-4'>
-              {/* Logo - 已修正为红橙黄火焰渐变并修改兼容类名 */}
+              {/* Logo */}
               <div className='text-base font-black tracking-wide bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 bg-clip-text text-transparent'>
                 {siteName}
               </div>
@@ -98,9 +100,9 @@ const PageLayout = ({
             </div>
           </div>
 
-          {/* Main Content - 移动端44px顶部 + 底部导航栏空间，桌面端64px */}
+          {/* Main Content - 移动端 100% 宽度（px-0），平板及以上恢复间距 */}
           <main className='w-full min-h-screen pt-[44px] md:pt-16 pb-16 md:pb-8'>
-            <div className='w-full max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
+            <div className='w-full max-w-[2560px] mx-auto px-0 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
               {children}
             </div>
           </main>
