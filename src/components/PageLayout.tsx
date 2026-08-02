@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 'use client';
 
 import { Sparkles } from 'lucide-react';
@@ -71,12 +69,9 @@ const PageLayout = ({
     // 2025 Modern Navigation Layout
     return (
       <>
-        {/* 移动端整体缩放 10% 样式包裹层 */}
-        <div className='w-full min-h-screen md:transform-none' style={{ transform: 'scale(0.9)', transformOrigin: 'top center', width: '111.11%', marginLeft: '-5.555%' }}>
+        <div className='w-full min-h-screen'>
           {/* Modern Navigation - Top (Desktop) & Bottom (Mobile) */}
-          <div className='md:w-full'>
-            <ModernNav showAIButton={aiEnabled ?? false} onAIButtonClick={() => setShowAIRecommendModal(true)} />
-          </div>
+          <ModernNav showAIButton={aiEnabled ?? false} onAIButtonClick={() => setShowAIRecommendModal(true)} />
 
           {/* 移动端头部 - Logo和用户菜单 */}
           <div className='md:hidden fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm'>
