@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Heart, Trash2, X, Clock, Calendar, ChevronRight } from 'lucide-react';
+import { Heart, Trash2, X, Clock, Calendar, ChevronRight, Film, Tv, PlaySquare, Cat, Clover, Radio } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -270,7 +270,33 @@ function HomeClient() {
   return (
     <main className="relative min-h-screen bg-[#131722] text-white flex flex-col selection:bg-[#DC143C] selection:text-white">
       
-      {/* ================== 右侧按钮 ================== */}
+      {/* ================== 左上角按钮 ================== */}
+      <div className='absolute top-4 left-4 md:top-6 md:left-6 z-50 flex items-center gap-2 sm:gap-3'>
+        {/* 历史与收藏 */}
+        <button
+          onClick={() => setShowFavoritesModal(true)}
+          className="group flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+        >
+          <Clock className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+          <span className="text-xs sm:text-sm font-medium tracking-wide hidden sm:inline">历史与收藏</span>
+          {(favoriteItems.length > 0 || Object.keys(allPlayRecords).length > 0) && (
+            <span className="bg-[#333] group-hover:bg-[#DC143C] text-white text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full ml-0.5 transition-colors">
+              {favoriteItems.length + Object.keys(allPlayRecords).length}
+            </span>
+          )}
+        </button>
+
+        {/* 即将上映 */}
+        <button
+          onClick={() => setShowUpcomingModal(true)}
+          className="group flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+        >
+          <Calendar className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+          <span className="text-xs sm:text-sm font-medium tracking-wide hidden sm:inline">即将上映</span>
+        </button>
+      </div>
+
+      {/* ================== 右上角按钮 ================== */}
       <div className='absolute top-4 right-4 md:top-6 md:right-6 z-50 flex items-center gap-2'>
         <ThemeToggle />
         <UserMenu />
@@ -293,54 +319,74 @@ function HomeClient() {
           </Link>
         </div>
 
-        {/* ================== 新增：首页快捷功能按钮组 ================== */}
-        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mb-8">
-          {/* 历史与收藏 按钮 */}
-          <button
-            onClick={() => setShowFavoritesModal(true)}
-            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
-          >
-            <Clock className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
-            <span className="text-xs sm:text-sm font-medium tracking-wide">历史与收藏</span>
-            {(favoriteItems.length > 0 || Object.keys(allPlayRecords).length > 0) && (
-              <span className="bg-[#333] group-hover:bg-[#DC143C] text-white text-[10px] px-2 py-0.5 rounded-full ml-1 transition-colors">
-                {favoriteItems.length + Object.keys(allPlayRecords).length}
-              </span>
-            )}
-          </button>
-
-          {/* 源库浏览 按钮 */}
+        {/* ================== 首页分类快捷按钮组 ================== */}
+        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mb-8 max-w-3xl mx-auto">
+          {/* 电影 */}
           <Link
-            href="/source-browser"
+            href="/douban?type=movie"
             className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
           >
-            <svg className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <span className="text-xs sm:text-sm font-medium tracking-wide">源库浏览</span>
+            <Film className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">电影</span>
           </Link>
 
-          {/* 即将上映 按钮 */}
-          <button
-            onClick={() => setShowUpcomingModal(true)}
+          {/* 剧集 */}
+          <Link
+            href="/douban?type=tv"
             className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
           >
-            <Calendar className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
-            <span className="text-xs sm:text-sm font-medium tracking-wide">即将上映</span>
-          </button>
+            <Tv className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">剧集</span>
+          </Link>
+
+          {/* 短剧 */}
+          <Link
+            href="/shortdrama"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <PlaySquare className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">短剧</span>
+          </Link>
+
+          {/* 动漫 */}
+          <Link
+            href="/douban?type=anime"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Cat className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">动漫</span>
+          </Link>
+
+          {/* 综艺 */}
+          <Link
+            href="/douban?type=show"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Clover className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">综艺</span>
+          </Link>
+
+          {/* 直播 */}
+          <Link
+            href="/live"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Radio className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">直播</span>
+          </Link>
         </div>
 
         {/* 胶囊搜索框 */}
         <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl px-2 sm:px-0 relative mx-auto z-50">
           <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl relative z-20">
             
-            {/* 首页标识图标 */}
-            <div className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 shrink-0">
-              <svg className="w-5 h-5 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            {/* 源库浏览标识图标 (替换原首页) */}
+            <Link href="/source-browser" className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 hover:text-[#DC143C] shrink-0 transition-colors cursor-pointer group/link">
+              <svg className="w-5 h-5 sm:mr-1.5 group-hover/link:text-[#DC143C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-              <span className="hidden sm:inline text-sm font-medium">首页</span>
-            </div>
+              <span className="hidden sm:inline text-sm font-medium">源库浏览</span>
+            </Link>
             
             {/* 分割线 */}
             <div className="h-6 w-px bg-[#333] mx-1 sm:mx-2 transition-colors group-focus-within:bg-[#555]"></div>
