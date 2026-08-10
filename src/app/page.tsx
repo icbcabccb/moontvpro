@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Heart, Trash2, X, Clock, Calendar, ChevronRight, Film, Tv, PlaySquare, Cat, Clover, Radio } from 'lucide-react';
+import { Heart, Trash2, X, Clock, Calendar, ChevronRight, Film, Tv, PlaySquare, Cat, Clover, Radio, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -403,11 +403,9 @@ function HomeClient() {
           <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl relative z-20">
             
             {/* 源库浏览标识图标 */}
-            <Link href="/source-browser" className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 hover:text-[#DC143C] shrink-0 transition-colors cursor-pointer group/link">
-              <svg className="w-5 h-5 sm:mr-1.5 group-hover/link:text-[#DC143C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              <span className="hidden sm:inline text-sm font-medium">源库浏览</span>
+            <Link href="/source-browser" className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 hover:text-[#DC143C] shrink-0 transition-colors cursor-pointer group/link" title="源库浏览">
+              <Search className="w-5 h-5 sm:mr-1.5 group-hover/link:text-[#DC143C] transition-colors" />
+              <span className="hidden sm:inline text-sm font-medium group-hover/link:text-[#DC143C] transition-colors">源库</span>
             </Link>
             
             {/* 分割线 */}
@@ -439,9 +437,7 @@ function HomeClient() {
                 className="px-3 flex items-center justify-center text-gray-500 hover:text-[#DC143C] transition-colors shrink-0"
                 aria-label="清空搜索框"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                <X className="w-5 h-5" />
               </button>
             )}
             
@@ -480,13 +476,14 @@ function HomeClient() {
                 <h2 className='text-sm font-medium text-gray-400'>
                   最近搜索
                 </h2>
+                {/* 增加特效与图标的清空按钮 */}
                 <button
-                  onClick={() => {
-                    clearSearchHistory(); 
-                  }}
-                  className='text-xs text-gray-500 hover:text-[#DC143C] transition-colors'
+                  onClick={() => clearSearchHistory()}
+                  className='p-1.5 text-gray-500 hover:text-[#DC143C] hover:bg-[#DC143C]/10 rounded-full transition-all duration-300 hover:scale-110 hover:rotate-12 active:scale-95 cursor-pointer'
+                  title="清空搜索记录"
+                  aria-label="清空搜索记录"
                 >
-                  清空记录
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
               <div className='flex flex-wrap gap-2'>
@@ -499,7 +496,7 @@ function HomeClient() {
                           `/search?q=${encodeURIComponent(item.trim())}`
                         );
                       }}
-                      className='px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] rounded-full text-xs text-gray-300 hover:text-white transition-colors duration-200 shadow-md'
+                      className='px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded-full text-xs text-gray-300 hover:text-white transition-colors duration-200 shadow-md'
                     >
                       {item}
                     </button>
