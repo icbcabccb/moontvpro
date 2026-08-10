@@ -2,7 +2,7 @@
 
 'use client';
 
-import { ExternalLink, Layers, Server, Tv } from 'lucide-react';
+import { ExternalLink, Server, Tv } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -552,10 +552,13 @@ export default function SourceBrowserPage() {
         <div className='relative'>
           <div className='absolute inset-0 bg-linear-to-r from-emerald-400/10 via-green-400/10 to-teal-400/10 rounded-2xl blur-3xl'></div>
           <div className='relative flex items-center gap-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl'>
+            
+            {/* 替换了SVG，改为了图片Logo */}
             <div className='relative w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-500 via-green-500 to-teal-500 flex items-center justify-center shadow-lg group hover:scale-110 transition-transform duration-300'>
               <div className='absolute inset-0 bg-emerald-400 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity'></div>
-              <Layers className='relative w-8 h-8 text-white drop-shadow-lg' />
+              <img src="/logo.png" alt="Logo" className="relative z-10 w-10 h-10 object-contain drop-shadow-md" />
             </div>
+            
             <div className='flex-1'>
               <h1 className='text-3xl md:text-4xl font-bold bg-linear-to-r from-emerald-600 via-green-600 to-teal-600 dark:from-emerald-400 dark:via-green-400 dark:to-teal-400 bg-clip-text text-transparent'>
                 源&分类
@@ -1057,7 +1060,7 @@ export default function SourceBrowserPage() {
                           </div>
                         ) : null;
                       })()}
-                      {/* 按需：应你的要求，预览不再展示集数选择列表，保持布局紧凑 */}
+                      
                       {/* Douban/Bangumi 扩展信息 */}
                       <div className='pt-2 space-y-2'>
                         {/* Douban */}
