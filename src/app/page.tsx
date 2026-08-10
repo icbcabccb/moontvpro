@@ -13,6 +13,9 @@ import {
   getAllFavorites,
   getAllPlayRecords,
   subscribeToDataUpdates,
+  getSearchHistory,
+  deleteSearchHistory,
+  clearSearchHistory,
 } from '@/lib/db.client';
 
 import VideoCard from '@/components/VideoCard';
@@ -31,6 +34,9 @@ function HomeClient() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // 搜索历史状态
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
   // 模态框及选项卡状态
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
@@ -61,6 +67,22 @@ function HomeClient() {
         setRequireClearConfirmation(JSON.parse(savedRequireClearConfirmation));
       }
     }
+  }, []);
+
+  // 加载搜索历史及监听更新
+  useEffect(() => {
+    getSearchHistory().then(setSearchHistory);
+
+    const unsubscribeSearch = subscribeToDataUpdates(
+      'searchHistoryUpdated',
+      (newHistory: string[]) => {
+        setSearchHistory(newHistory);
+      }
+    );
+
+    return () => {
+      unsubscribeSearch();
+    };
   }, []);
 
   // 获取即将上映数据
@@ -380,7 +402,7 @@ function HomeClient() {
         <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl px-2 sm:px-0 relative mx-auto z-50">
           <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl relative z-20">
             
-            {/* 源库浏览标识图标 (替换原首页) */}
+            {/* 源库浏览标识图标 */}
             <Link href="/source-browser" className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 hover:text-[#DC143C] shrink-0 transition-colors cursor-pointer group/link">
               <svg className="w-5 h-5 sm:mr-1.5 group-hover/link:text-[#DC143C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -449,6 +471,56 @@ function HomeClient() {
             }}
           />
         </form>
+
+        {/* ================== 搜索历史模块 ================== */}
+        {searchHistory.length > 0 && (
+          <div className="w-full max-w-2xl px-2 sm:px-0 mx-auto mt-6 z-10 relative">
+            <section className='mb-6'>
+              <div className='flex items-center justify-between mb-4'>
+                <h2 className='text-sm font-medium text-gray-400'>
+                  最近搜索
+                </h2>
+                <button
+                  onClick={() => {
+                    clearSearchHistory(); 
+                  }}
+                  className='text-xs text-gray-500 hover:text-[#DC143C] transition-colors'
+                >
+                  清空记录
+                </button>
+              </div>
+              <div className='flex flex-wrap gap-2'>
+                {searchHistory.map((item) => (
+                  <div key={item} className='relative group'>
+                    <button
+                      onClick={() => {
+                        setSearchQuery(item);
+                        router.push(
+                          `/search?q=${encodeURIComponent(item.trim())}`
+                        );
+                      }}
+                      className='px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] rounded-full text-xs text-gray-300 hover:text-white transition-colors duration-200 shadow-md'
+                    >
+                      {item}
+                    </button>
+                    {/* 删除按钮 */}
+                    <button
+                      aria-label='删除搜索历史'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        deleteSearchHistory(item); 
+                      }}
+                      className='absolute -top-1 -right-1 w-3.5 h-3.5 opacity-0 group-hover:opacity-100 bg-[#333] hover:bg-[#DC143C] text-white rounded-full flex items-center justify-center text-[8px] transition-colors'
+                    >
+                      <X className='w-2.5 h-2.5' />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
       </div>
 
       {/* 底部 Footer */}
