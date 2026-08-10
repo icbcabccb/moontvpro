@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Heart, Trash2, X, Clock, Calendar, ChevronRight } from 'lucide-react';
+import { Heart, Trash2, X, Clock, Calendar, ChevronRight, Film, Tv, PlaySquare, Cat, Clover, Radio } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -284,7 +284,7 @@ function HomeClient() {
         </div>
 
         {/* ================== 新增：首页快捷功能按钮组 ================== */}
-        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mb-8">
+        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mb-8 max-w-4xl">
           {/* 历史与收藏 按钮 */}
           <button
             onClick={() => setShowFavoritesModal(true)}
@@ -318,6 +318,60 @@ function HomeClient() {
             <Calendar className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
             <span className="text-xs sm:text-sm font-medium tracking-wide">即将上映</span>
           </button>
+
+          {/* 电影 */}
+          <Link
+            href="/douban?type=movie"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Film className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">电影</span>
+          </Link>
+
+          {/* 剧集 */}
+          <Link
+            href="/douban?type=tv"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Tv className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">剧集</span>
+          </Link>
+
+          {/* 短剧 */}
+          <Link
+            href="/shortdrama"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <PlaySquare className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">短剧</span>
+          </Link>
+
+          {/* 动漫 */}
+          <Link
+            href="/douban?type=anime"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Cat className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">动漫</span>
+          </Link>
+
+          {/* 综艺 */}
+          <Link
+            href="/douban?type=show"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Clover className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">综艺</span>
+          </Link>
+
+          {/* 直播 */}
+          <Link
+            href="/live"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Radio className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">直播</span>
+          </Link>
         </div>
 
         {/* 胶囊搜索框 */}
