@@ -55,7 +55,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
     },
     {
       icon: Globe,
-      label: '源浏览',
+      label: '源库',
       href: '/source-browser',
       activeGradient: 'bg-gradient-to-r from-blue-500 to-cyan-500',
       activeTextColor: 'text-white',
