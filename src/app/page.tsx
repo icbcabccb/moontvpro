@@ -1,57 +1,188 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-console */
+
 'use client';
 
+import { Heart, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
-import SearchSuggestions from '@/components/SearchSuggestions';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export default function Home() {
+import {
+  clearAllFavorites,
+  getAllFavorites,
+  getAllPlayRecords,
+  subscribeToDataUpdates,
+} from '@/lib/db.client';
+
+import VideoCard from '@/components/VideoCard';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+
+function HomeClient() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // 完全等同于代码A的提交逻辑：去除多余空格并路由跳转
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  // 收藏夹模态框状态
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+  const [requireClearConfirmation, setRequireClearConfirmation] = useState(false);
+  const [showClearFavoritesDialog, setShowClearFavoritesDialog] = useState(false);
+  const [favoriteFilter, setFavoriteFilter] = useState<'all' | 'movie' | 'tv' | 'anime' | 'shortdrama' | 'live' | 'variety'>('all');
+  const [favoriteSortBy, setFavoriteSortBy] = useState<'recent' | 'title' | 'rating'>('recent');
+
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedRequireClearConfirmation = localStorage.getItem('requireClearConfirmation');
+      if (savedRequireClearConfirmation !== null) {
+        setRequireClearConfirmation(JSON.parse(savedRequireClearConfirmation));
+      }
+    }
+  }, []);
+
+  // 获取收藏数据
+  const { data: allFavorites = {} } = useQuery({
+    queryKey: ['favorites'],
+    queryFn: () => getAllFavorites(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const { data: allPlayRecords = {} } = useQuery({
+    queryKey: ['playRecords'],
+    queryFn: () => getAllPlayRecords(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  type FavoriteItem = {
+    id: string;
+    source: string;
+    title: string;
+    poster: string;
+    episodes: number;
+    source_name: string;
+    currentEpisode?: number;
+    search_title?: string;
+    origin?: 'vod' | 'live';
+    type?: string;
+    releaseDate?: string;
+    remarks?: string;
+  };
+
+  const favoriteItems = useMemo(() => {
+    return Object.entries(allFavorites)
+      .sort(([, a], [, b]) => (b as any).save_time - (a as any).save_time)
+      .map(([key, fav]: [string, any]) => {
+        const plusIndex = key.indexOf('+');
+        const source = key.slice(0, plusIndex);
+        const id = key.slice(plusIndex + 1);
+
+        const playRecord = allPlayRecords[key] as any;
+        const currentEpisode = playRecord?.index;
+
+        return {
+          id,
+          source,
+          title: fav.title,
+          year: fav.year,
+          poster: fav.cover,
+          episodes: fav.total_episodes,
+          source_name: fav.source_name,
+          currentEpisode,
+          search_title: fav?.search_title,
+          origin: fav?.origin,
+          type: fav?.type,
+          releaseDate: fav?.releaseDate,
+          remarks: fav?.remarks,
+        } as FavoriteItem;
+      });
+  }, [allFavorites, allPlayRecords]);
+
+  const favoriteStats = useMemo(() => {
+    if (favoriteItems.length === 0) return null;
+
+    return {
+      total: favoriteItems.length,
+      movie: favoriteItems.filter(item => {
+        if (item.type) return item.type === 'movie';
+        if (item.source === 'shortdrama' || item.source_name === '短剧') return false;
+        if (item.source === 'bangumi') return false;
+        if (item.origin === 'live') return false;
+        return item.episodes === 1;
+      }).length,
+      tv: favoriteItems.filter(item => {
+        if (item.type) return item.type === 'tv';
+        if (item.source === 'shortdrama' || item.source_name === '短剧') return false;
+        if (item.source === 'bangumi') return false;
+        if (item.origin === 'live') return false;
+        return item.episodes > 1;
+      }).length,
+      anime: favoriteItems.filter(item => {
+        if (item.type) return item.type === 'anime';
+        return item.source === 'bangumi';
+      }).length,
+      shortdrama: favoriteItems.filter(item => {
+        if (item.type) return item.type === 'shortdrama';
+        return item.source === 'shortdrama' || item.source_name === '短剧';
+      }).length,
+      live: favoriteItems.filter(item => item.origin === 'live').length,
+      variety: favoriteItems.filter(item => {
+        if (item.type) return item.type === 'variety';
+        return false;
+      }).length,
+    };
+  }, [favoriteItems]);
+
+  const handleClearFavorites = async () => {
+    await clearAllFavorites();
+    queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    setShowClearFavoritesDialog(false);
+  };
+
+  useEffect(() => {
+    const unsubscribeFavorites = subscribeToDataUpdates(
+      'favoritesUpdated',
+      () => {
+        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      }
+    );
+
+    const unsubscribePlayRecords = subscribeToDataUpdates(
+      'playRecordsUpdated',
+      () => {
+        queryClient.invalidateQueries({ queryKey: ['playRecords'] });
+      }
+    );
+
+    return () => {
+      unsubscribeFavorites();
+      unsubscribePlayRecords();
+    };
+  }, [queryClient]);
+
+  // 搜索处理逻辑
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
-    if (!trimmed) return;
-
-    // 回显搜索框并隐藏联想提示
-    setSearchQuery(trimmed);
-    setShowSuggestions(false);
-    
-    // 代码A使用的是 q= 参数
-    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
-  };
-
-  // 等同于代码A：联想选中后的处理
-  const handleSuggestionSelect = (suggestion: string) => {
-    setSearchQuery(suggestion);
-    setShowSuggestions(false);
-    router.push(`/search?q=${encodeURIComponent(suggestion)}`);
-  };
-
-  // 等同于代码A：输入时触发联想
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    setShowSuggestions(true);
-  };
-
-  // 等同于代码A：聚焦时触发联想/历史记录
-  const handleInputFocus = () => {
-    setShowSuggestions(true);
+    const keyword = searchQuery.trim();
+    if (keyword) {
+      router.push(`/search?keyword=${encodeURIComponent(keyword)}`);
+    }
   };
 
   return (
-    // 使用与截图完全一致的深石板蓝背景色 #131722
     <main className="min-h-screen bg-[#131722] text-white flex flex-col selection:bg-[#DC143C] selection:text-white">
       
       {/* 核心搜索区域 - 垂直水平绝对居中 */}
       <div className="flex-1 flex flex-col items-center justify-center w-full px-4 -mt-10">
         
         {/* 大 Logo 区域 */}
-        <div className="flex justify-center items-center mb-10">
+        <div className="flex justify-center items-center mb-6">
           <Link href="/" className="flex items-center transition-transform hover:scale-105 duration-300">
             {/* 青色放大镜图标 */}
             <svg className="w-16 h-16 md:w-20 md:h-20 mr-4 text-[#00ccff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,9 +195,25 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* 胶囊搜索框，增加 relative 以锚定搜索建议组件 */}
-        <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl px-2 sm:px-0 relative mx-auto z-50">
-          <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl relative z-20">
+        {/* ================== 新增：收藏夹唤起按钮 ================== */}
+        <div className="flex justify-center mb-8">
+          <button
+            onClick={() => setShowFavoritesModal(true)}
+            className="group flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Heart className="w-4 h-4 group-hover:fill-[#DC143C] transition-colors" />
+            <span className="text-sm font-medium tracking-wide">我的收藏</span>
+            {favoriteItems.length > 0 && (
+              <span className="bg-[#333] group-hover:bg-[#DC143C] text-white text-[10px] px-2 py-0.5 rounded-full ml-1 transition-colors">
+                {favoriteItems.length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* 胶囊搜索框 */}
+        <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl px-2 sm:px-0">
+          <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl">
             
             {/* 首页标识图标 */}
             <div className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 shrink-0">
@@ -79,29 +226,23 @@ export default function Home() {
             {/* 分割线 */}
             <div className="h-6 w-px bg-[#333] mx-1 sm:mx-2 transition-colors group-focus-within:bg-[#555]"></div>
 
-            {/* 输入框 - 接入代码A的逻辑 */}
+            {/* 输入框 */}
             <input 
-              id="searchInput"
               type="text" 
               name="search"
               value={searchQuery}
-              onChange={handleInputChange}
-              onFocus={handleInputFocus}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent text-white px-2 sm:px-4 py-2 focus:outline-none placeholder-gray-600 text-base min-w-0" 
               placeholder="搜索你想看的剧名..." 
               autoComplete="off"
               aria-label="视频搜索框" 
             />
             
-            {/* 一键清空按钮 - 接入代码A的聚焦与重置逻辑 */}
+            {/* 一键清空按钮 */}
             {searchQuery.length > 0 && (
               <button 
                 type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  setShowSuggestions(true); // 清空后显示搜索历史
-                  document.getElementById('searchInput')?.focus();
-                }}
+                onClick={() => setSearchQuery('')}
                 className="px-3 flex items-center justify-center text-gray-500 hover:text-[#DC143C] transition-colors shrink-0"
                 aria-label="清空搜索框"
               >
@@ -121,31 +262,13 @@ export default function Home() {
               <span>搜索</span>
             </button>
           </div>
-
-          {/* 搜索建议/历史组件 */}
-          <SearchSuggestions
-            query={searchQuery}
-            isVisible={showSuggestions}
-            onSelect={handleSuggestionSelect}
-            onClose={() => setShowSuggestions(false)}
-            onEnterKey={() => {
-              // 处理组件内部透传的回车事件
-              const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
-              if (!trimmed) return;
-              setSearchQuery(trimmed);
-              setShowSuggestions(false);
-              router.push(`/search?q=${encodeURIComponent(trimmed)}`);
-            }}
-          />
         </form>
       </div>
 
-      {/* 底部 Footer - 保持在最底端 */}
+      {/* 底部 Footer */}
       <footer className="w-full py-6 bg-[#0a0a0a] border-t border-[#1f2937]">
         <div className="max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            
-            {/* 左侧信息 */}
             <div className="mb-4 md:mb-0">
               <div className="flex items-center justify-center md:justify-start">
                 <img src="/logo.png" alt="红月搜索 Logo" className="w-10 h-10 mr-2 object-contain" />
@@ -156,7 +279,6 @@ export default function Home() {
               </p>
             </div>
             
-            {/* 右侧外链 */}
             <div className="text-center md:text-right">
               <div className="flex flex-wrap justify-center md:justify-end gap-x-5 gap-y-2">
                 <Link href="/about" className="text-[#9ca3af] hover:text-white text-sm transition-colors">关于红月</Link>
@@ -169,10 +291,259 @@ export default function Home() {
                 <a href="https://sync.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">RedMoon-VTVII</a>
               </div>
             </div>
-
           </div>
         </div>
       </footer>
+
+      {/* ================== 新增：我的收藏 模态框 ================== */}
+      {showFavoritesModal && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 opacity-100 transition-opacity">
+          <div 
+            className="bg-[#131722] border border-[#333] w-full max-w-6xl max-h-[90vh] rounded-2xl flex flex-col shadow-2xl relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal 头部 */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#333] bg-[#1a1a1a] shrink-0">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Heart className="w-5 h-5 text-[#DC143C] fill-[#DC143C]" />
+                我的收藏
+              </h2>
+              <div className="flex items-center gap-3">
+                {favoriteItems.length > 0 && (
+                  <button
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#DC143C] hover:text-white hover:bg-[#DC143C] border border-[#DC143C] rounded-lg transition-all duration-200"
+                    onClick={() => {
+                      if (requireClearConfirmation) {
+                        setShowClearFavoritesDialog(true);
+                      } else {
+                        handleClearFavorites();
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">清空收藏</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowFavoritesModal(false)}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-[#333] rounded-xl transition-colors"
+                  aria-label="关闭"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal 内容区 (可滚动) */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              {/* 统计信息 */}
+              {favoriteStats && (
+                <div className='mb-5 flex flex-wrap gap-2 text-sm text-gray-400'>
+                  <span className='px-3 py-1 bg-[#222] border border-[#333] rounded-full text-gray-300'>
+                    共 <strong className='text-white'>{favoriteStats.total}</strong> 项
+                  </span>
+                  {favoriteStats.movie > 0 && (
+                    <span className='px-3 py-1 bg-[#222] border border-[#333] text-blue-400 rounded-full'>
+                      电影 {favoriteStats.movie}
+                    </span>
+                  )}
+                  {favoriteStats.tv > 0 && (
+                    <span className='px-3 py-1 bg-[#222] border border-[#333] text-purple-400 rounded-full'>
+                      剧集 {favoriteStats.tv}
+                    </span>
+                  )}
+                  {favoriteStats.anime > 0 && (
+                    <span className='px-3 py-1 bg-[#222] border border-[#333] text-pink-400 rounded-full'>
+                      动漫 {favoriteStats.anime}
+                    </span>
+                  )}
+                  {favoriteStats.shortdrama > 0 && (
+                    <span className='px-3 py-1 bg-[#222] border border-[#333] text-orange-400 rounded-full'>
+                      短剧 {favoriteStats.shortdrama}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* 筛选标签 */}
+              {favoriteItems.length > 0 && (
+                <div className='mb-5 flex flex-wrap gap-2'>
+                  {[
+                    { key: 'all' as const, label: '全部', icon: '📚' },
+                    { key: 'movie' as const, label: '电影', icon: '🎬' },
+                    { key: 'tv' as const, label: '剧集', icon: '📺' },
+                    { key: 'anime' as const, label: '动漫', icon: '🎌' },
+                    { key: 'shortdrama' as const, label: '短剧', icon: '🎭' },
+                    { key: 'live' as const, label: '直播', icon: '📡' },
+                    { key: 'variety' as const, label: '综艺', icon: '🎪' },
+                  ].map(({ key, label, icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setFavoriteFilter(key)}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
+                        favoriteFilter === key
+                          ? 'bg-[#DC143C] border-[#DC143C] text-white shadow-[0_0_10px_rgba(220,20,60,0.3)] scale-105'
+                          : 'bg-[#1a1a1a] border-[#333] text-gray-400 hover:bg-[#222] hover:text-gray-200'
+                      }`}
+                    >
+                      <span className='mr-1'>{icon}</span>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* 排序选项 */}
+              {favoriteItems.length > 0 && (
+                <div className='mb-6 flex items-center gap-2 text-sm'>
+                  <span className='text-gray-500'>排序：</span>
+                  <div className='flex gap-2'>
+                    {[
+                      { key: 'recent' as const, label: '最近添加' },
+                      { key: 'title' as const, label: '标题 A-Z' },
+                    ].map(({ key, label }) => (
+                      <button
+                        key={key}
+                        onClick={() => setFavoriteSortBy(key)}
+                        className={`px-3 py-1 rounded-md transition-colors border ${
+                          favoriteSortBy === key
+                            ? 'bg-[#333] border-[#555] text-white'
+                            : 'bg-[#1a1a1a] border-[#333] text-gray-500 hover:bg-[#222] hover:text-gray-300'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 收藏列表网格 */}
+              <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-14 sm:gap-y-20 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+                {(() => {
+                  let filtered = favoriteItems;
+                  if (favoriteFilter === 'movie') {
+                    filtered = favoriteItems.filter(item => {
+                      if (item.type) return item.type === 'movie';
+                      if (item.source === 'shortdrama' || item.source_name === '短剧') return false;
+                      if (item.source === 'bangumi') return false;
+                      if (item.origin === 'live') return false;
+                      return item.episodes === 1;
+                    });
+                  } else if (favoriteFilter === 'tv') {
+                    filtered = favoriteItems.filter(item => {
+                      if (item.type) return item.type === 'tv';
+                      if (item.source === 'shortdrama' || item.source_name === '短剧') return false;
+                      if (item.source === 'bangumi') return false;
+                      if (item.origin === 'live') return false;
+                      return item.episodes > 1;
+                    });
+                  } else if (favoriteFilter === 'anime') {
+                    filtered = favoriteItems.filter(item => {
+                      if (item.type) return item.type === 'anime';
+                      return item.source === 'bangumi';
+                    });
+                  } else if (favoriteFilter === 'shortdrama') {
+                    filtered = favoriteItems.filter(item => {
+                      if (item.type) return item.type === 'shortdrama';
+                      return item.source === 'shortdrama' || item.source_name === '短剧';
+                    });
+                  } else if (favoriteFilter === 'live') {
+                    filtered = favoriteItems.filter(item => item.origin === 'live');
+                  } else if (favoriteFilter === 'variety') {
+                    filtered = favoriteItems.filter(item => {
+                      if (item.type) return item.type === 'variety';
+                      return false;
+                    });
+                  }
+
+                  if (favoriteSortBy === 'title') {
+                    filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'));
+                  }
+
+                  return filtered.map((item) => {
+                    let calculatedRemarks = item.remarks;
+
+                    if (item.releaseDate) {
+                      const releaseDate = new Date(item.releaseDate);
+                      const daysDiff = Math.ceil((releaseDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+                      if (daysDiff < 0) {
+                        const daysAgo = Math.abs(daysDiff);
+                        calculatedRemarks = `已上映${daysAgo}天`;
+                      } else if (daysDiff === 0) {
+                        calculatedRemarks = '今日上映';
+                      } else {
+                        calculatedRemarks = `${daysDiff}天后上映`;
+                      }
+                    }
+
+                    return (
+                      <div key={item.id + item.source} className='w-full'>
+                        <VideoCard
+                          query={item.search_title}
+                          {...item}
+                          from='favorite'
+                          remarks={calculatedRemarks}
+                        />
+                      </div>
+                    );
+                  });
+                })()}
+
+                {/* 空状态 */}
+                {favoriteItems.length === 0 && (
+                  <div className='col-span-full flex flex-col items-center justify-center py-20 px-4'>
+                    <div className='mb-6 relative'>
+                      <div className='absolute inset-0 bg-[#DC143C]/20 blur-3xl rounded-full animate-pulse'></div>
+                      <svg className='w-28 h-28 relative z-10' viewBox='0 0 200 200' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                        <path d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
+                          className='fill-[#1a1a1a] stroke-[#333] transition-colors duration-300'
+                          strokeWidth='3'
+                        />
+                        <path d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
+                          fill='none'
+                          stroke='currentColor'
+                          strokeWidth='2'
+                          strokeDasharray='5,5'
+                          className='text-[#555]'
+                        />
+                      </svg>
+                    </div>
+                    <h3 className='text-lg font-semibold text-gray-300 mb-2'>
+                      收藏夹空空如也
+                    </h3>
+                    <p className='text-sm text-gray-500 text-center max-w-xs'>
+                      快去发现喜欢的影视作品，点击 ❤️ 添加到收藏吧！
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 清空收藏的确认对话框 */}
+      <ConfirmDialog
+        isOpen={showClearFavoritesDialog}
+        title="确认清空收藏"
+        message={`确定要清空所有收藏吗？\n\n这将删除 ${favoriteItems.length} 项收藏，此操作无法撤销。`}
+        confirmText="确认清空"
+        cancelText="取消"
+        variant="danger"
+        onConfirm={handleClearFavorites}
+        onCancel={() => setShowClearFavoritesDialog(false)}
+      />
+
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#131722]"></div>}>
+      <HomeClient />
+    </Suspense>
   );
 }
