@@ -329,13 +329,13 @@ function HomeClient() {
         
         {/* 大 Logo 区域 */}
         <div className="flex justify-center items-center mb-10 -mt-16 sm:-mt-24">
-          <Link href="/" className="flex items-center transition-transform hover:scale-105 duration-300">
-            {/* 青色放大镜图标 */}
-            <svg className="w-16 h-16 md:w-20 md:h-20 mr-4 text-[#00ccff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Link href="/" className="flex items-center transition-opacity hover:opacity-80 duration-300">
+            {/* 青色放大镜图标，随字体比例适量调小 */}
+            <svg className="w-12 h-12 md:w-16 md:h-16 mr-3 text-[#00ccff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m15.75 15.75-2.489-2.489m0 0a3.375 3.375 0 1 0-4.773-4.773 3.375 3.375 0 0 0 4.774 4.774ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
             {/* 品牌名称，严格应用 #DC143C 红色 */}
-            <h1 className="text-5xl md:text-6xl font-bold text-[#DC143C] tracking-wide">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#DC143C] tracking-wide">
               红月搜索
             </h1>
           </Link>
