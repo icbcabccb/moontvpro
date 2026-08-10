@@ -2,10 +2,10 @@
 
 'use client';
 
-import { Heart, Trash2, X, Clock } from 'lucide-react';
+import { Heart, Trash2, X, Clock, Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -19,6 +19,8 @@ import VideoCard from '@/components/VideoCard';
 import ContinueWatching from '@/components/ContinueWatching';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import SearchSuggestions from '@/components/SearchSuggestions';
+import SectionTitle from '@/components/SectionTitle';
+import ScrollableRow from '@/components/ScrollableRow';
 
 function HomeClient() {
   const router = useRouter();
@@ -29,6 +31,14 @@ function HomeClient() {
   // 模态框及选项卡状态
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [modalTab, setModalTab] = useState<'favorites' | 'history'>('history'); // 默认展示历史或收藏
+  
+  // 即将上映模态框状态
+  const [showUpcomingModal, setShowUpcomingModal] = useState(false);
+  const [upcomingReleases, setUpcomingReleases] = useState<any[]>([]);
+  const [isUpcomingLoading, setIsUpcomingLoading] = useState(true);
+  const [upcomingFilter, setUpcomingFilter] = useState<'all' | 'movie' | 'tv'>('all');
+  const workerRef = useRef<Worker | null>(null);
+
   const [requireClearConfirmation, setRequireClearConfirmation] = useState(false);
   const [showClearFavoritesDialog, setShowClearFavoritesDialog] = useState(false);
   const [favoriteFilter, setFavoriteFilter] = useState<'all' | 'movie' | 'tv' | 'anime' | 'shortdrama' | 'live' | 'variety'>('all');
@@ -47,6 +57,62 @@ function HomeClient() {
         setRequireClearConfirmation(JSON.parse(savedRequireClearConfirmation));
       }
     }
+  }, []);
+
+  // 获取即将上映数据
+  useEffect(() => {
+    const fetchUpcoming = async () => {
+      try {
+        setIsUpcomingLoading(true);
+        const res = await fetch('/api/release-calendar?limit=100');
+        if (!res.ok) {
+          setIsUpcomingLoading(false);
+          return;
+        }
+        const data = await res.json();
+        const releases = data.items || [];
+        
+        if (!workerRef.current && typeof window !== 'undefined' && window.Worker) {
+          try {
+            workerRef.current = new Worker(new URL('../workers/releaseCalendar.worker.ts', import.meta.url));
+            workerRef.current.onmessage = (e) => {
+              setUpcomingReleases(e.data.selectedItems || []);
+              setIsUpcomingLoading(false);
+            };
+            workerRef.current.onerror = () => {
+              setUpcomingReleases([]);
+              setIsUpcomingLoading(false);
+            };
+          } catch (err) {
+            setUpcomingReleases([]);
+            setIsUpcomingLoading(false);
+          }
+        }
+        
+        if (workerRef.current) {
+          const todayDate = new Date();
+          todayDate.setHours(0, 0, 0, 0);
+          workerRef.current.postMessage({
+            releases,
+            today: todayDate.toISOString().split('T')[0],
+          });
+        } else {
+          setUpcomingReleases([]);
+          setIsUpcomingLoading(false);
+        }
+      } catch (err) {
+        setIsUpcomingLoading(false);
+      }
+    };
+    
+    fetchUpcoming();
+    
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
+    };
   }, []);
 
   // 获取收藏数据
@@ -216,16 +282,16 @@ function HomeClient() {
             </h1>
           </Link>
         </div>
-        
-{/* ================== 新增：首页快捷功能按钮组 ================== */}
-        <div className="flex justify-center items-center gap-4 mb-8">
+
+        {/* ================== 新增：首页快捷功能按钮组 ================== */}
+        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mb-8">
           {/* 历史与收藏 按钮 */}
           <button
             onClick={() => setShowFavoritesModal(true)}
-            className="group flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
           >
             <Clock className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
-            <span className="text-sm font-medium tracking-wide">历史与收藏</span>
+            <span className="text-xs sm:text-sm font-medium tracking-wide">历史与收藏</span>
             {(favoriteItems.length > 0 || Object.keys(allPlayRecords).length > 0) && (
               <span className="bg-[#333] group-hover:bg-[#DC143C] text-white text-[10px] px-2 py-0.5 rounded-full ml-1 transition-colors">
                 {favoriteItems.length + Object.keys(allPlayRecords).length}
@@ -236,13 +302,22 @@ function HomeClient() {
           {/* 源库浏览 按钮 */}
           <Link
             href="/source-browser"
-            className="group flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
           >
             <svg className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <span className="text-sm font-medium tracking-wide">源库浏览</span>
+            <span className="text-xs sm:text-sm font-medium tracking-wide">源库浏览</span>
           </Link>
+
+          {/* 即将上映 按钮 */}
+          <button
+            onClick={() => setShowUpcomingModal(true)}
+            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <Calendar className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <span className="text-xs sm:text-sm font-medium tracking-wide">即将上映</span>
+          </button>
         </div>
 
         {/* 胶囊搜索框 */}
@@ -252,7 +327,7 @@ function HomeClient() {
             {/* 首页标识图标 */}
             <div className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 shrink-0">
               <svg className="w-5 h-5 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 001 1m-6 0h6"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
               </svg>
               <span className="hidden sm:inline text-sm font-medium">首页</span>
             </div>
@@ -321,7 +396,7 @@ function HomeClient() {
       </div>
 
       {/* 底部 Footer */}
-      <footer className="w-full py-6 bg-[#0a0a0a] border-t border-[#1f2937]">
+      <footer className="w-full py-6 bg-[#0a0a0a] border-t border-[#1f2937] shrink-0">
         <div className="max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
@@ -601,6 +676,127 @@ function HomeClient() {
                 <div className="w-full pt-2">
                   <ContinueWatching />
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================== 即将上映 独立模态框 ================== */}
+      {showUpcomingModal && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 opacity-100 transition-opacity">
+          <div 
+            className="bg-[#131722] border border-[#333] w-full max-w-6xl max-h-[90vh] rounded-2xl flex flex-col shadow-2xl relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal 头部 */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#333] bg-[#1a1a1a] shrink-0">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[#DC143C]" />
+                即将上映
+              </h2>
+              <button
+                onClick={() => setShowUpcomingModal(false)}
+                className="p-2 text-gray-400 hover:text-white hover:bg-[#333] rounded-xl transition-colors"
+                aria-label="关闭"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* Modal 内容区 */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              {(() => {
+                const loading = isUpcomingLoading;
+                console.log('🔍 即将上映 section 渲染检查:', { loading, upcomingReleasesCount: upcomingReleases.length });
+                return null;
+              })()}
+              
+              {isUpcomingLoading ? (
+                 <div className='flex items-center justify-center py-12'>
+                    <div className='w-8 h-8 border-2 border-[#333] border-t-[#DC143C] rounded-full animate-spin'></div>
+                 </div>
+              ) : !isUpcomingLoading && upcomingReleases.length > 0 && (
+                <section className='mb-8'>
+                  <div className='mb-4 flex items-center justify-between'>
+                    <SectionTitle title="即将上映" icon={Calendar} iconColor="text-[#DC143C]" />
+                    <Link
+                      href='/release-calendar'
+                      className='flex items-center text-sm text-gray-400 hover:text-[#DC143C] transition-colors'
+                    >
+                      查看更多
+                      <ChevronRight className='w-4 h-4 ml-1' />
+                    </Link>
+                  </div>
+
+                  {/* Tab 切换 */}
+                  <div className='mb-4 flex gap-2'>
+                    {[
+                      { key: 'all', label: '全部', count: upcomingReleases.length },
+                      { key: 'movie', label: '电影', count: upcomingReleases.filter(r => r.type === 'movie').length },
+                      { key: 'tv', label: '电视剧', count: upcomingReleases.filter(r => r.type === 'tv').length },
+                    ].map(({ key, label, count }) => (
+                      <button
+                        key={key}
+                        onClick={() => setUpcomingFilter(key as 'all' | 'movie' | 'tv')}
+                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
+                          upcomingFilter === key
+                            ? 'bg-[#DC143C] border-[#DC143C] text-white shadow-[0_0_10px_rgba(220,20,60,0.3)]'
+                            : 'bg-[#1a1a1a] border-[#333] text-gray-400 hover:bg-[#222] hover:text-gray-200'
+                        }`}
+                      >
+                        {label}
+                        {count > 0 && (
+                          <span className={`ml-1.5 text-xs ${
+                            upcomingFilter === key ? 'text-white/80' : 'text-gray-500'
+                          }`}>
+                            ({count})
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  <ScrollableRow enableVirtualization={true}>
+                    {upcomingReleases
+                      .filter(release => upcomingFilter === 'all' || release.type === upcomingFilter)
+                      .map((release, index) => {
+                        const releaseDate = new Date(release.releaseDate);
+                        const daysDiff = Math.ceil((releaseDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+                        let remarksText;
+                        if (daysDiff < 0) {
+                          remarksText = `已上映${Math.abs(daysDiff)}天`;
+                        } else if (daysDiff === 0) {
+                          remarksText = '今日上映';
+                        } else {
+                          remarksText = `${daysDiff}天后上映`;
+                        }
+
+                        return (
+                          <div
+                            key={`${release.id}-${index}`}
+                            className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                          >
+                            <VideoCard
+                              source='upcoming_release'
+                              id={release.id}
+                              source_name='即将上映'
+                              from='douban'
+                              title={release.title}
+                              poster={release.cover || '/placeholder-poster.jpg'}
+                              year={release.releaseDate.split('-')[0]}
+                              type={release.type}
+                              remarks={remarksText}
+                              releaseDate={release.releaseDate}
+                              query={release.title}
+                              episodes={release.episodes || (release.type === 'tv' ? undefined : 1)}
+                            />
+                          </div>
+                        );
+                      })}
+                  </ScrollableRow>
+                </section>
               )}
             </div>
           </div>
