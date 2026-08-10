@@ -216,9 +216,10 @@ function HomeClient() {
             </h1>
           </Link>
         </div>
-
-        {/* ================== 新增：历史与收藏 唤起按钮 ================== */}
-        <div className="flex justify-center mb-8">
+        
+{/* ================== 新增：首页快捷功能按钮组 ================== */}
+        <div className="flex justify-center items-center gap-4 mb-8">
+          {/* 历史与收藏 按钮 */}
           <button
             onClick={() => setShowFavoritesModal(true)}
             className="group flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
@@ -231,6 +232,17 @@ function HomeClient() {
               </span>
             )}
           </button>
+
+          {/* 源库浏览 按钮 */}
+          <Link
+            href="/source-browser"
+            className="group flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+          >
+            <svg className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span className="text-sm font-medium tracking-wide">源库浏览</span>
+          </Link>
         </div>
 
         {/* 胶囊搜索框 */}
