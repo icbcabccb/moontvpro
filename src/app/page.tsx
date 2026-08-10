@@ -4,6 +4,7 @@
 
 import { ChevronRight, Film, Tv, Calendar, Sparkles, Play, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // 新增：用于 Next.js 的无刷新路由跳转
 import { Suspense, useEffect, useState, useRef, useMemo, useReducer } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -103,6 +104,7 @@ const homeReducer = (state: HomeState, action: HomeAction): HomeState => {
 
 function HomeClient() {
   const queryClient = useQueryClient();
+  const router = useRouter(); // 实例化 router
 
   const [state, dispatch] = useReducer(homeReducer, {
     activeTab: 'home',
@@ -155,6 +157,7 @@ function HomeClient() {
   }, []);
 
   const [requireClearConfirmation, setRequireClearConfirmation] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(''); // 新增：用于搜索框的受控状态
 
   useEffect(() => {
     const authInfo = getAuthInfoFromBrowserCookie();
@@ -531,37 +534,32 @@ function HomeClient() {
     };
   }, [queryClient]);
 
-  // 原生表单跳转搜索页，保持正常路由功能体验
+  // 修改：接入 Next.js 无刷新路由，并确保获取最新受控数据
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const keyword = formData.get('search')?.toString().trim();
+    const keyword = searchQuery.trim();
     if (keyword) {
-      window.location.href = `/search?keyword=${encodeURIComponent(keyword)}`;
+      router.push(`/search?keyword=${encodeURIComponent(keyword)}`);
     }
   };
 
   return (
     <PageLayout>
-      {/* 确保外层充满全屏暗黑 */}
       <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#DC143C] selection:text-white">
         <TelegramWelcomeModal />
 
         <div className='overflow-visible pb-44 md:pb-36 max-w-7xl mx-auto'>
           
-          {/* ==================== 融合 B 代码的头部与搜索区域 ==================== */}
           <header className="text-center mb-6 mt-8 md:mt-12 px-4">
             <div className="flex justify-center items-center mb-6">
               <a href="#" onClick={(e) => { e.preventDefault(); dispatch({ type: 'SET_ACTIVE_TAB', payload: 'home' }); }} className="flex items-center">
                 <svg className="w-16 h-16 md:w-20 md:h-20 mr-2 text-[#00ccff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m15.75 15.75-2.489-2.489m0 0a3.375 3.375 0 1 0-4.773-4.773 3.375 3.375 0 0 0 4.774 4.774ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-                {/* 严格应用指定的 ＃DC143C 色 */}
                 <h1 className="text-4xl md:text-5xl font-bold text-[#DC143C]">红月搜索</h1>
               </a>
             </div>
 
-            {/* B 代码风格的胶囊搜索框 (完全原汁原味) */}
             <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl px-2 sm:px-0 mx-auto">
               <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_15px_rgba(220,20,60,0.2)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-lg">
                 
@@ -576,11 +574,29 @@ function HomeClient() {
                 
                 <div className="h-6 w-px bg-[#333] mx-1 sm:mx-2 transition-colors group-focus-within:bg-[#555]"></div>
 
+                {/* 修改为受控组件以支持实时状态和清空 */}
                 <input type="text" name="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent text-white px-2 sm:px-4 py-2 focus:outline-none placeholder-gray-600 text-base min-w-0" 
                   placeholder="搜索你想看的剧名..." 
                   autoComplete="off"
                   aria-label="视频搜索框" />
+                
+                {/* 增加一键清空按钮 (还原代码 B 设计逻辑) */}
+                {searchQuery.length > 0 && (
+                  <button 
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="px-3 flex items-center justify-center text-gray-500 hover:text-[#DC143C] transition-colors shrink-0"
+                    aria-label="清空搜索框"
+                    title="清空搜索框"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </button>
+                )}
                 
                 <button type="submit" 
                   className="h-11 px-5 sm:px-8 flex items-center justify-center bg-[#DC143C] hover:bg-[#b81030] text-white rounded-full font-medium transition-all duration-200 shadow-[0_0_10px_rgba(220,20,60,0.3)] hover:shadow-[0_0_15px_rgba(220,20,60,0.5)] transform hover:scale-[1.02] active:scale-95 shrink-0" 
@@ -593,9 +609,7 @@ function HomeClient() {
               </div>
             </form>
           </header>
-          {/* ==================== 融合 B 代码的头部区域结束 ==================== */}
 
-          {/* 暗黑系欢迎横幅 */}
           <div className='mb-8 relative overflow-hidden rounded-xl bg-[#1a1a1a] border border-[#333] shadow-lg mx-4 md:mx-0'>
             <div className='relative p-4 sm:p-5'>
               <div className='relative z-10 flex items-center justify-between gap-4'>
@@ -624,7 +638,6 @@ function HomeClient() {
             </div>
           </div>
 
-          {/* 顶部 Tab 切换 */}
           <div className='mb-8 flex items-center justify-center'>
             <div className='p-1 bg-[#1a1a1a] border border-[#333] rounded-full inline-flex shadow-lg'>
               <CapsuleSwitch
@@ -640,7 +653,6 @@ function HomeClient() {
 
           <div className='w-full mx-auto px-4 md:px-0'>
             {activeTab === 'favorites' ? (
-              // 收藏夹视图 (已暗黑化)
               <section className='mb-8'>
                 <div className='mb-6 flex items-center justify-between'>
                   <h2 className='text-xl font-bold text-white'>
@@ -663,7 +675,6 @@ function HomeClient() {
                   )}
                 </div>
 
-                {/* 统计信息 */}
                 {favoriteStats && (
                   <div className='mb-4 flex flex-wrap gap-2 text-sm text-gray-400'>
                     <span className='px-3 py-1 bg-[#222] border border-[#333] rounded-full text-gray-300'>
@@ -692,7 +703,6 @@ function HomeClient() {
                   </div>
                 )}
 
-                {/* 筛选标签 */}
                 {favoriteItems.length > 0 && (
                   <div className='mb-4 flex flex-wrap gap-2'>
                     {[
@@ -720,7 +730,6 @@ function HomeClient() {
                   </div>
                 )}
 
-                {/* 排序选项 */}
                 {favoriteItems.length > 0 && (
                   <div className='mb-4 flex items-center gap-2 text-sm'>
                     <span className='text-gray-500'>排序：</span>
@@ -857,7 +866,6 @@ function HomeClient() {
                 />
               </section>
             ) : (
-              // 首页视图
               <>
                 <ContinueWatching />
 
@@ -1109,7 +1117,6 @@ function HomeClient() {
           </div>
         </div>
         
-        {/* ==================== 移植自 B 代码的暗黑页脚 ==================== */}
         <footer className="footer mt-8 py-6 border-t border-[#333] bg-[#0a0a0a]">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-center">
