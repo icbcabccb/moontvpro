@@ -22,6 +22,10 @@ import SearchSuggestions from '@/components/SearchSuggestions';
 import SectionTitle from '@/components/SectionTitle';
 import ScrollableRow from '@/components/ScrollableRow';
 
+// 引入主题切换和用户菜单组件
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { UserMenu } from '@/components/UserMenu';
+
 function HomeClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -264,8 +268,14 @@ function HomeClient() {
   };
 
   return (
-    <main className="min-h-screen bg-[#131722] text-white flex flex-col selection:bg-[#DC143C] selection:text-white">
+    <main className="relative min-h-screen bg-[#131722] text-white flex flex-col selection:bg-[#DC143C] selection:text-white">
       
+      {/* ================== 右侧按钮 ================== */}
+      <div className='absolute top-4 right-4 md:top-6 md:right-6 z-50 flex items-center gap-2'>
+        <ThemeToggle />
+        <UserMenu />
+      </div>
+
       {/* 核心搜索区域 - 垂直水平绝对居中 */}
       <div className="flex-1 flex flex-col items-center justify-center w-full px-4 -mt-10">
         
