@@ -196,6 +196,7 @@ export default function SourceBrowserPage() {
 
   useEffect(() => {
     if (activeSourceKey && activeCategory && mode === 'category') {
+      // 重置列表并加载第一页
       setItems([]);
       setPage(1);
       setPageCount(1);
@@ -245,6 +246,7 @@ export default function SourceBrowserPage() {
 
   useEffect(() => {
     if (activeSourceKey && mode === 'search' && query.trim()) {
+      // 重置列表并加载第一页
       setItems([]);
       setPage(1);
       setPageCount(1);
@@ -252,7 +254,7 @@ export default function SourceBrowserPage() {
     }
   }, [activeSourceKey, mode, query, fetchSearch]);
 
-  // IntersectionObserver 处理自动翻页
+  // IntersectionObserver 处理自动翻页（含简单节流）
   useEffect(() => {
     if (!loadMoreRef.current) return;
     const el = loadMoreRef.current;
@@ -261,7 +263,7 @@ export default function SourceBrowserPage() {
         const entry = entries[0];
         if (entry.isIntersecting) {
           const now = Date.now();
-          const intervalOk = now - lastFetchAtRef.current > 700; 
+          const intervalOk = now - lastFetchAtRef.current > 700; // 700ms 节流
           if (
             !loadingItems &&
             !loadingMore &&
@@ -296,7 +298,7 @@ export default function SourceBrowserPage() {
     fetchSearch,
   ]);
 
-  // 首屏填充
+  // 首屏填充：若列表高度不足以产生滚动且仍有更多，则自动连续翻页尝试填满视口
   useEffect(() => {
     const tryAutoFill = async () => {
       if (autoFillInProgressRef.current) return;
@@ -310,9 +312,10 @@ export default function SourceBrowserPage() {
       try {
         let iterations = 0;
         while (iterations < 5) {
+          // 最多连续加载5页以防过载
           if (!hasMore) break;
           const now = Date.now();
-          if (now - lastFetchAtRef.current <= 400) break; 
+          if (now - lastFetchAtRef.current <= 400) break; // 避免过于频繁
           lastFetchAtRef.current = now;
           const next = page + iterations + 1;
           if (mode === 'search' && query.trim()) {
@@ -324,6 +327,7 @@ export default function SourceBrowserPage() {
           }
           iterations++;
 
+          // 重新检测是否还在视口之内（内容增长可能已挤出视口）
           if (!loadMoreRef.current) break;
           const rect = loadMoreRef.current.getBoundingClientRect();
           if (rect.top > window.innerHeight + 100) break;
@@ -333,6 +337,7 @@ export default function SourceBrowserPage() {
       }
     };
 
+    // 异步执行以等待布局更新
     const id = setTimeout(tryAutoFill, 50);
     return () => clearTimeout(id);
   }, [
@@ -352,6 +357,7 @@ export default function SourceBrowserPage() {
 
   const filteredAndSorted = useMemo(() => {
     let arr = [...items];
+    // 关键词/地区筛选（包含于标题或备注）
     if (filterKeyword.trim()) {
       const kw = filterKeyword.trim().toLowerCase();
       arr = arr.filter(
@@ -360,6 +366,7 @@ export default function SourceBrowserPage() {
           (i.remarks || '').toLowerCase().includes(kw)
       );
     }
+    // 年份筛选（精确匹配）
     if (filterYear) {
       arr = arr.filter((i) => (i.year || '').trim() === filterYear);
     }
@@ -377,7 +384,7 @@ export default function SourceBrowserPage() {
           (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0)
         );
       default:
-        return arr; 
+        return arr; // 保持上游顺序
     }
   }, [items, sortBy, filterKeyword, filterYear]);
 
@@ -386,12 +393,14 @@ export default function SourceBrowserPage() {
       setPreviewDoubanLoading(true);
       setPreviewDouban(null);
       const keyRaw = `douban-details-id=${doubanId}`;
+      // 1) 先查缓存（与全站一致的 ClientCache）
       const cached = (await ClientCache.get(keyRaw)) as DoubanItem | null;
       if (cached) {
         setPreviewDouban(cached);
         return;
       }
 
+      // 2) 缓存未命中，回源请求 /api/douban/details
       const fallback = await fetch(
         `/api/douban/details?id=${encodeURIComponent(String(doubanId))}`
       );
@@ -401,10 +410,11 @@ export default function SourceBrowserPage() {
           | DoubanItem;
         const normalized = (dbData as { data?: DoubanItem }).data || (dbData as DoubanItem);
         setPreviewDouban(normalized);
+        // 3) 回写缓存（4小时）
         try {
           await ClientCache.set(keyRaw, normalized, 14400);
         } catch (err) {
-          void err;
+          void err; // ignore cache write failure
         }
       } else {
         setPreviewDouban(null);
@@ -416,9 +426,9 @@ export default function SourceBrowserPage() {
     }
   };
 
+  // bangumi工具
   const isBangumiId = (id: number): boolean =>
     id > 0 && id.toString().length === 6;
-
   const fetchBangumiDetails = async (bangumiId: number) => {
     try {
       setPreviewBangumiLoading(true);
@@ -462,9 +472,10 @@ export default function SourceBrowserPage() {
       if (!res.ok) throw new Error('获取详情失败');
       const data = (await res.json()) as GlobalSearchResult;
       setPreviewData(data);
-      
+      // 处理 douban_id：优先 /api/detail，其次通过 /api/search/one 指定站点精确匹配推断
       let dId: number | null = data?.douban_id ? Number(data.douban_id) : null;
       if (!dId) {
+        // 在当前源内精确搜索标题以获取带有 douban_id 的条目
         const normalize = (s: string) =>
           (s || '').replace(/\s+/g, '').toLowerCase();
         const variants = Array.from(
@@ -483,6 +494,7 @@ export default function SourceBrowserPage() {
               results?: GlobalSearchResult[];
             };
             const list: GlobalSearchResult[] = payload.results || [];
+            // 优先标题+年份匹配
             const tNorm = normalize(item.title);
             const matchStrict = list.find(
               (r) =>
@@ -731,7 +743,7 @@ export default function SourceBrowserPage() {
             <div className='px-5 py-4 border-b border-[#333] flex items-center justify-between'>
               <div className='flex items-center gap-2.5 font-semibold text-gray-100'>
                 <div className='w-8 h-8 rounded-lg bg-[#222] flex items-center justify-center'>
-                  <Tv className='w-4 h-4 text-blue-400' />
+                  <Tv className='w-4 h-4 text-[#00ccff]' />
                 </div>
                 <span>{activeSource.name} 分类</span>
               </div>
@@ -746,7 +758,7 @@ export default function SourceBrowserPage() {
                 <div className='flex flex-wrap gap-2.5'>
                   {loadingCategories ? (
                     <div className='flex items-center gap-2 text-sm text-gray-500'>
-                      <div className='w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
+                      <div className='w-4 h-4 border-2 border-[#00ccff] border-t-transparent rounded-full animate-spin'></div>
                       加载分类...
                     </div>
                   ) : categoryError ? (
@@ -767,7 +779,7 @@ export default function SourceBrowserPage() {
                         onClick={() => setActiveCategory(c.type_id)}
                         className={`group relative px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all duration-300 transform hover:scale-105 ${
                           activeCategory === c.type_id
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30'
+                            ? 'bg-[#00ccff] text-white border-[#00ccff] shadow-lg shadow-[#00ccff]/30'
                             : 'border-[#333] text-gray-400 hover:bg-[#222] hover:text-gray-200'
                         }`}
                         style={{
@@ -784,7 +796,7 @@ export default function SourceBrowserPage() {
               <div>
                 {loadingItems ? (
                   <div className='flex items-center gap-2 text-sm text-gray-500'>
-                    <div className='w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
+                    <div className='w-4 h-4 border-2 border-[#00ccff] border-t-transparent rounded-full animate-spin'></div>
                     加载内容...
                   </div>
                 ) : itemsError ? (
