@@ -184,12 +184,12 @@ function LoginPageClient() {
             href='https://400821.xyz'
             target='_blank'
             rel='noopener noreferrer'
-            className='relative inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 mb-3 rounded-2xl bg-[#222] border border-[#333] shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#DC143C]/50 hover:shadow-[#DC143C]/20 cursor-pointer'
+            className='relative inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-3 rounded-2xl bg-[#222] border border-[#333] shadow-lg transition-all duration-300 hover:scale-105 hover:border-[#DC143C]/50 hover:shadow-[#DC143C]/20 cursor-pointer'
           >
             <img
               src="/logo.png"
               alt={siteName}
-              className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-md"
+              className="w-10 h-10 sm:w-14 sm:h-14 object-contain drop-shadow-md"
               onError={(e) => {
                 // 加载失败时隐藏图片并显示后方 Sparkles 图标
                 e.currentTarget.style.display = 'none';
@@ -198,7 +198,7 @@ function LoginPageClient() {
               }}
             />
             {/* 降级图标 */}
-            <Sparkles className='w-7 h-7 sm:w-8 sm:h-8 text-[#DC143C] hidden' />
+            <Sparkles className='w-8 h-8 sm:w-10 sm:h-10 text-[#DC143C] hidden' />
           </a>
 
           {/* 网站名称标题 - 点击跳转至 https://400821.xyz */}
