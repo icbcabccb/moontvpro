@@ -166,7 +166,6 @@ export default function SourceBrowserPage() {
         setItems((prev) => (append ? [...prev, ...list] : list));
         setPage(Number(data.meta?.page || p));
         setPageCount(Number(data.meta?.pagecount || 1));
-        // 更新可选年份
         const years = Array.from(
           new Set(list.map((i) => (i.year || '').trim()).filter(Boolean))
         );
@@ -196,7 +195,6 @@ export default function SourceBrowserPage() {
 
   useEffect(() => {
     if (activeSourceKey && activeCategory && mode === 'category') {
-      // 重置列表并加载第一页
       setItems([]);
       setPage(1);
       setPageCount(1);
@@ -246,7 +244,6 @@ export default function SourceBrowserPage() {
 
   useEffect(() => {
     if (activeSourceKey && mode === 'search' && query.trim()) {
-      // 重置列表并加载第一页
       setItems([]);
       setPage(1);
       setPageCount(1);
@@ -254,7 +251,6 @@ export default function SourceBrowserPage() {
     }
   }, [activeSourceKey, mode, query, fetchSearch]);
 
-  // IntersectionObserver 处理自动翻页（含简单节流）
   useEffect(() => {
     if (!loadMoreRef.current) return;
     const el = loadMoreRef.current;
@@ -263,7 +259,7 @@ export default function SourceBrowserPage() {
         const entry = entries[0];
         if (entry.isIntersecting) {
           const now = Date.now();
-          const intervalOk = now - lastFetchAtRef.current > 700; // 700ms 节流
+          const intervalOk = now - lastFetchAtRef.current > 700;
           if (
             !loadingItems &&
             !loadingMore &&
@@ -298,7 +294,6 @@ export default function SourceBrowserPage() {
     fetchSearch,
   ]);
 
-  // 首屏填充：若列表高度不足以产生滚动且仍有更多，则自动连续翻页尝试填满视口
   useEffect(() => {
     const tryAutoFill = async () => {
       if (autoFillInProgressRef.current) return;
@@ -312,10 +307,9 @@ export default function SourceBrowserPage() {
       try {
         let iterations = 0;
         while (iterations < 5) {
-          // 最多连续加载5页以防过载
           if (!hasMore) break;
           const now = Date.now();
-          if (now - lastFetchAtRef.current <= 400) break; // 避免过于频繁
+          if (now - lastFetchAtRef.current <= 400) break;
           lastFetchAtRef.current = now;
           const next = page + iterations + 1;
           if (mode === 'search' && query.trim()) {
@@ -327,7 +321,6 @@ export default function SourceBrowserPage() {
           }
           iterations++;
 
-          // 重新检测是否还在视口之内（内容增长可能已挤出视口）
           if (!loadMoreRef.current) break;
           const rect = loadMoreRef.current.getBoundingClientRect();
           if (rect.top > window.innerHeight + 100) break;
@@ -337,7 +330,6 @@ export default function SourceBrowserPage() {
       }
     };
 
-    // 异步执行以等待布局更新
     const id = setTimeout(tryAutoFill, 50);
     return () => clearTimeout(id);
   }, [
@@ -357,7 +349,6 @@ export default function SourceBrowserPage() {
 
   const filteredAndSorted = useMemo(() => {
     let arr = [...items];
-    // 关键词/地区筛选（包含于标题或备注）
     if (filterKeyword.trim()) {
       const kw = filterKeyword.trim().toLowerCase();
       arr = arr.filter(
@@ -366,7 +357,6 @@ export default function SourceBrowserPage() {
           (i.remarks || '').toLowerCase().includes(kw)
       );
     }
-    // 年份筛选（精确匹配）
     if (filterYear) {
       arr = arr.filter((i) => (i.year || '').trim() === filterYear);
     }
@@ -384,7 +374,7 @@ export default function SourceBrowserPage() {
           (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0)
         );
       default:
-        return arr; // 保持上游顺序
+        return arr;
     }
   }, [items, sortBy, filterKeyword, filterYear]);
 
@@ -393,14 +383,12 @@ export default function SourceBrowserPage() {
       setPreviewDoubanLoading(true);
       setPreviewDouban(null);
       const keyRaw = `douban-details-id=${doubanId}`;
-      // 1) 先查缓存（与全站一致的 ClientCache）
       const cached = (await ClientCache.get(keyRaw)) as DoubanItem | null;
       if (cached) {
         setPreviewDouban(cached);
         return;
       }
 
-      // 2) 缓存未命中，回源请求 /api/douban/details
       const fallback = await fetch(
         `/api/douban/details?id=${encodeURIComponent(String(doubanId))}`
       );
@@ -410,11 +398,10 @@ export default function SourceBrowserPage() {
           | DoubanItem;
         const normalized = (dbData as { data?: DoubanItem }).data || (dbData as DoubanItem);
         setPreviewDouban(normalized);
-        // 3) 回写缓存（4小时）
         try {
           await ClientCache.set(keyRaw, normalized, 14400);
         } catch (err) {
-          void err; // ignore cache write failure
+          void err;
         }
       } else {
         setPreviewDouban(null);
@@ -426,9 +413,9 @@ export default function SourceBrowserPage() {
     }
   };
 
-  // bangumi工具
   const isBangumiId = (id: number): boolean =>
     id > 0 && id.toString().length === 6;
+
   const fetchBangumiDetails = async (bangumiId: number) => {
     try {
       setPreviewBangumiLoading(true);
@@ -472,10 +459,9 @@ export default function SourceBrowserPage() {
       if (!res.ok) throw new Error('获取详情失败');
       const data = (await res.json()) as GlobalSearchResult;
       setPreviewData(data);
-      // 处理 douban_id：优先 /api/detail，其次通过 /api/search/one 指定站点精确匹配推断
+      
       let dId: number | null = data?.douban_id ? Number(data.douban_id) : null;
       if (!dId) {
-        // 在当前源内精确搜索标题以获取带有 douban_id 的条目
         const normalize = (s: string) =>
           (s || '').replace(/\s+/g, '').toLowerCase();
         const variants = Array.from(
@@ -494,7 +480,6 @@ export default function SourceBrowserPage() {
               results?: GlobalSearchResult[];
             };
             const list: GlobalSearchResult[] = payload.results || [];
-            // 优先标题+年份匹配
             const tNorm = normalize(item.title);
             const matchStrict = list.find(
               (r) =>
@@ -1237,36 +1222,6 @@ export default function SourceBrowserPage() {
           </div>
         )}
       </div>
-
-      {/* 底部 Footer */}
-      <footer className="w-full py-6 bg-[#0a0a0a] border-t border-[#1f2937] shrink-0">
-        <div className="max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <div className="flex items-center justify-center md:justify-start">
-                <img src="/logo.png" alt="红月搜索 Logo" className="w-10 h-10 mr-2 object-contain" />
-                <span className="text-[#00ccff] font-bold text-lg">红月搜索</span>
-              </div>
-              <p className="text-[#6b7280] text-sm mt-2 text-center md:text-left">
-                © {new Date().getFullYear()} 红月搜索-剧名搜索、在线视频神器。
-              </p>
-            </div>
-            
-            <div className="text-center md:text-right">
-              <div className="flex flex-wrap justify-center md:justify-end gap-x-5 gap-y-2">
-                <Link href="/about" className="text-[#9ca3af] hover:text-white text-sm transition-colors">关于红月</Link>
-                <Link href="/privacy" className="text-[#9ca3af] hover:text-white text-sm transition-colors">隐私政策</Link>
-                <a href="https://200805.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">网盘系统</a>
-                <a href="https://400823.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">镜向站</a>
-                <a href="https://timis.dpdns.org" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">API中转服务</a>
-                <a href="https://ctv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">RedMoon-CTV</a>
-                <a href="https://vtv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">RedMoon-VTV</a>
-                <a href="https://sync.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">RedMoon-VTVII</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }
