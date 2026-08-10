@@ -2,22 +2,49 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import SearchSuggestions from '@/components/SearchSuggestions';
 
 export default function Home() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // 完全等同于代码A的提交逻辑：去除多余空格并路由跳转
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const keyword = searchQuery.trim();
-    if (keyword) {
-      router.push(`/search?keyword=${encodeURIComponent(keyword)}`);
-    }
+    const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
+    if (!trimmed) return;
+
+    // 回显搜索框并隐藏联想提示
+    setSearchQuery(trimmed);
+    setShowSuggestions(false);
+    
+    // 代码A使用的是 q= 参数
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+  };
+
+  // 等同于代码A：联想选中后的处理
+  const handleSuggestionSelect = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    router.push(`/search?q=${encodeURIComponent(suggestion)}`);
+  };
+
+  // 等同于代码A：输入时触发联想
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setShowSuggestions(true);
+  };
+
+  // 等同于代码A：聚焦时触发联想/历史记录
+  const handleInputFocus = () => {
+    setShowSuggestions(true);
   };
 
   return (
-    // 使用与截图完全一致的深石板蓝背景色 #131722，并设置为全屏 Flex 布局
+    // 使用与截图完全一致的深石板蓝背景色 #131722
     <main className="min-h-screen bg-[#131722] text-white flex flex-col selection:bg-[#DC143C] selection:text-white">
       
       {/* 核心搜索区域 - 垂直水平绝对居中 */}
@@ -37,9 +64,9 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* 胶囊搜索框 */}
-        <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl px-2 sm:px-0">
-          <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl">
+        {/* 胶囊搜索框，增加 relative 以锚定搜索建议组件 */}
+        <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl px-2 sm:px-0 relative mx-auto z-50">
+          <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl relative z-20">
             
             {/* 首页标识图标 */}
             <div className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 shrink-0">
@@ -52,23 +79,29 @@ export default function Home() {
             {/* 分割线 */}
             <div className="h-6 w-px bg-[#333] mx-1 sm:mx-2 transition-colors group-focus-within:bg-[#555]"></div>
 
-            {/* 输入框 */}
+            {/* 输入框 - 接入代码A的逻辑 */}
             <input 
+              id="searchInput"
               type="text" 
               name="search"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleInputChange}
+              onFocus={handleInputFocus}
               className="flex-1 bg-transparent text-white px-2 sm:px-4 py-2 focus:outline-none placeholder-gray-600 text-base min-w-0" 
               placeholder="搜索你想看的剧名..." 
               autoComplete="off"
               aria-label="视频搜索框" 
             />
             
-            {/* 一键清空按钮 */}
+            {/* 一键清空按钮 - 接入代码A的聚焦与重置逻辑 */}
             {searchQuery.length > 0 && (
               <button 
                 type="button"
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  setShowSuggestions(true); // 清空后显示搜索历史
+                  document.getElementById('searchInput')?.focus();
+                }}
                 className="px-3 flex items-center justify-center text-gray-500 hover:text-[#DC143C] transition-colors shrink-0"
                 aria-label="清空搜索框"
               >
@@ -88,6 +121,22 @@ export default function Home() {
               <span>搜索</span>
             </button>
           </div>
+
+          {/* 搜索建议/历史组件 */}
+          <SearchSuggestions
+            query={searchQuery}
+            isVisible={showSuggestions}
+            onSelect={handleSuggestionSelect}
+            onClose={() => setShowSuggestions(false)}
+            onEnterKey={() => {
+              // 处理组件内部透传的回车事件
+              const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
+              if (!trimmed) return;
+              setSearchQuery(trimmed);
+              setShowSuggestions(false);
+              router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+            }}
+          />
         </form>
       </div>
 
