@@ -13,7 +13,6 @@ import DownloadEpisodeSelector from '@/components/download/DownloadEpisodeSelect
 import EpisodeSelector from '@/components/EpisodeSelector';
 import NetDiskSearchResults from '@/components/NetDiskSearchResults';
 import AcgSearch from '@/components/AcgSearch';
-import PageLayout from '@/components/PageLayout';
 import SkipController, { SkipSettingsButton } from '@/components/SkipController';
 import VideoCard from '@/components/VideoCard';
 import CommentSection from '@/components/play/CommentSection';
@@ -603,12 +602,6 @@ function PlayPageClient() {
     loadShortdramaDetails();
   }, [shortdramaId, loadingShortdramaDetails, shortdramaDetails]);
 
-  // 自动网盘搜索：当有视频标题时可以随时搜索
-  useEffect(() => {
-    // 移除自动搜索，改为用户点击按钮时触发
-    // 这样可以避免不必要的API调用
-  }, []);
-
   // 视频播放地址
   const [videoUrl, setVideoUrl] = useState('');
 
@@ -933,8 +926,6 @@ function PlayPageClient() {
     // 限制返回前1个最有可能的变体
     return variants.slice(0, 1);
   };
-
-  // 移除数字变体生成函数（优化性能，依赖相关性评分处理）
 
   /**
    * 生成中文标点符号的搜索变体
@@ -3553,7 +3544,7 @@ function PlayPageClient() {
         mutex: true,
         playsInline: true,
         autoPlayback: false,
-        theme: '#22c55e',
+        theme: '#DC143C', // 修改播放器主题色为指定的猩红色
         lang: 'zh-cn',
         hotkey: false,
         fastForward: true,
@@ -3705,7 +3696,7 @@ function PlayPageClient() {
         },
         icons: {
           loading:
-            '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDUwIDUwIj48cGF0aCBkPSJNMjUuMjUxIDYuNDYxYy0xMC4zMTggMC0xOC42ODMgOC4zNjUtMTguNjgzIDE4LjY4M2g0LjA2OGMwLTguMDcgNi41NDUtMTQuNjE1IDE0LjYxNS0xNC42MTVWNi40NjF6IiBmaWxsPSIjMDA5Njg4Ij48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIGF0dHJpYnV0ZVR5cGU9IlhNTCIgZHVyPSIxcyIgZnJvbT0iMCAyNSAyNSIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIHRvPSIzNjAgMjUgMjUiIHR5cGU9InJvdGF0ZSIvPjwvcGF0aD48L3N2Zz4=">',
+            '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDUwIDUwIj48cGF0aCBkPSJNMjUuMjUxIDYuNDYxYy0xMC4zMTggMC0xOC42ODMgOC4zNjUtMTguNjgzIDE4LjY4M2g0LjA2OGMwLTguMDcgNi41NDUtMTQuNjE1IDE0LjYxNS0xNC42MTVWNi40NjF6IiBmaWxsPSIjRGMxNDNDIj48YW5pbWF0ZVRyYW5zZm9ybSBhdHRyaWJ1dGVOYW1lPSJ0cmFuc2Zvcm0iIGF0dHJpYnV0ZVR5cGU9IlhNTCIgZHVyPSIxcyIgZnJvbT0iMCAyNSAyNSIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiIHRvPSIzNjAgMjUgMjUiIHR5cGU9InJvdGF0ZSIvPjwvcGF0aD48L3N2Zz4=">',
         },
         settings: [
           {
@@ -4028,12 +4019,12 @@ function PlayPageClient() {
                     // 🎯 动态弹幕密度控制 - 根据当前屏幕上的弹幕数量决定是否显示
                     const currentVisibleCount = document.querySelectorAll('.art-danmuku [data-state="emit"]').length;
                     const maxConcurrentDanmu = devicePerformance === 'high' ? 60 :
-                                             devicePerformance === 'medium' ? 40 : 25;
+                                               devicePerformance === 'medium' ? 40 : 25;
 
                     if (currentVisibleCount >= maxConcurrentDanmu) {
                       // 🔥 当弹幕密度过高时，随机丢弃部分弹幕，保持流畅性
                       const dropRate = devicePerformance === 'high' ? 0.1 :
-                                      devicePerformance === 'medium' ? 0.3 : 0.5;
+                                       devicePerformance === 'medium' ? 0.3 : 0.5;
                       if (Math.random() < dropRate) {
                         resolve(false); // 丢弃当前弹幕
                         return;
@@ -5118,22 +5109,21 @@ function PlayPageClient() {
 
   if (error) {
     return (
-      <PageLayout activePath='/play'>
+      <main className="min-h-screen bg-[#131722] text-gray-100">
         <PlayErrorDisplay error={error} videoTitle={videoTitle} />
-      </PageLayout>
+      </main>
     );
   }
 
   return (
-    <>
-      <PageLayout activePath='/play'>
+    <main className="min-h-screen bg-[#131722] text-gray-100 pb-10">
       <div className='flex flex-col gap-3 py-4 px-5 lg:px-[3rem] 2xl:px-20'>
         {/* 第一行：影片标题 */}
         <div className='py-1'>
-          <h1 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>
+          <h1 className='text-xl font-semibold text-gray-100'>
             {videoTitle || '影片标题'}
             {totalEpisodes > 1 && (
-              <span className='text-gray-500 dark:text-gray-400'>
+              <span className='text-gray-400'>
                 {` > ${detail?.episodes_titles?.[currentEpisodeIndex] || `第 ${currentEpisodeIndex + 1} 集`}`}
               </span>
             )}
@@ -5175,7 +5165,7 @@ function PlayPageClient() {
           >
             {/* 播放器 */}
             <div
-              className={`h-full transition-all duration-300 ease-in-out rounded-xl border border-white/0 dark:border-white/30 ${isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
+              className={`h-full transition-all duration-300 ease-in-out rounded-xl border border-white/0 dark:border-[#333] ${isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                 }`}
             >
               <div className='relative w-full h-[300px] lg:h-full'>
@@ -5325,50 +5315,49 @@ function PlayPageClient() {
         onConfirm={confirmFollowOwner}
         onReject={rejectFollowOwner}
       />
-      </PageLayout>
 
       {/* 网盘资源模态框 */}
       {showNetdiskModal && (
         <div
-          className='fixed inset-0 z-9999 bg-black/50 flex items-end md:items-center justify-center p-0 md:p-4'
+          className='fixed inset-0 z-[9999] bg-black/50 flex items-end md:items-center justify-center p-0 md:p-4'
           onClick={() => setShowNetdiskModal(false)}
         >
           <div
-            className='bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl w-full md:max-w-4xl max-h-[85vh] md:max-h-[90vh] flex flex-col shadow-2xl'
+            className='bg-[#1a1a1a] rounded-t-2xl md:rounded-2xl w-full md:max-w-4xl max-h-[85vh] md:max-h-[90vh] flex flex-col shadow-2xl border border-[#333]'
             onClick={(e) => e.stopPropagation()}
           >
             {/* 头部 - Fixed */}
-            <div className='shrink-0 border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6'>
+            <div className='shrink-0 border-b border-[#333] p-4 sm:p-6'>
               <div className='flex items-center justify-between mb-3'>
                 <div className='flex items-center gap-2 sm:gap-3'>
                   <div className='text-2xl sm:text-3xl'>📁</div>
                   <div>
-                    <h3 className='text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200'>
+                    <h3 className='text-lg sm:text-xl font-semibold text-gray-100'>
                       资源搜索
                     </h3>
                     {videoTitle && (
-                      <p className='text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5'>
+                      <p className='text-xs sm:text-sm text-gray-400 mt-0.5'>
                         搜索关键词：{videoTitle}
                       </p>
                     )}
                   </div>
                   {netdiskLoading && netdiskResourceType === 'netdisk' && (
                     <span className='inline-block ml-2'>
-                      <span className='inline-block h-4 w-4 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin'></span>
+                      <span className='inline-block h-4 w-4 sm:h-5 sm:w-5 border-2 border-[#333] border-t-blue-500 rounded-full animate-spin'></span>
                     </span>
                   )}
                   {netdiskTotal > 0 && netdiskResourceType === 'netdisk' && (
-                    <span className='inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 ml-2'>
+                    <span className='inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-[#DC143C]/20 text-[#DC143C] ml-2'>
                       {netdiskTotal} 个资源
                     </span>
                   )}
                 </div>
                 <button
                   onClick={() => setShowNetdiskModal(false)}
-                  className='rounded-lg p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors active:scale-95'
+                  className='rounded-lg p-1.5 sm:p-2 hover:bg-[#333] transition-colors active:scale-95'
                   aria-label='关闭'
                 >
-                  <X className='h-5 w-5 sm:h-6 sm:w-6 text-gray-500' />
+                  <X className='h-5 w-5 sm:h-6 sm:w-6 text-gray-400 hover:text-white' />
                 </button>
               </div>
 
@@ -5382,183 +5371,4 @@ function PlayPageClient() {
                                typeName.includes('日剧') ||
                                typeName.includes('韩剧');
 
-                console.log('[NetDisk] type_name:', detail?.type_name, 'isAnime:', isAnime);
-
-                return isAnime && (
-                  <div className='flex items-center gap-2'>
-                    <span className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>资源类型：</span>
-                    <div className='flex gap-2'>
-                      <button
-                        onClick={() => {
-                          setNetdiskResourceType('netdisk');
-                          setNetdiskResults(null);
-                          setNetdiskError(null);
-                        }}
-                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-lg border transition-all ${
-                          netdiskResourceType === 'netdisk'
-                            ? 'bg-blue-500 text-white border-blue-500 shadow-md'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        💾 网盘资源
-                      </button>
-                      <button
-                        onClick={() => {
-                          setNetdiskResourceType('acg');
-                          setNetdiskResults(null);
-                          setNetdiskError(null);
-                          if (videoTitle) {
-                            setAcgTriggerSearch(prev => !prev);
-                          }
-                        }}
-                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-lg border transition-all ${
-                          netdiskResourceType === 'acg'
-                            ? 'bg-purple-500 text-white border-purple-500 shadow-md'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        🎌 动漫磁力
-                      </button>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* 内容区 - Scrollable */}
-            <div ref={netdiskModalContentRef} className='flex-1 overflow-y-auto p-4 sm:p-6 relative'>
-              {/* 根据资源类型显示不同的内容 */}
-              {netdiskResourceType === 'netdisk' ? (
-                <>
-                  {videoTitle && !netdiskLoading && !netdiskResults && !netdiskError && (
-                    <div className='flex flex-col items-center justify-center py-12 sm:py-16 text-center'>
-                      <div className='text-5xl sm:text-6xl mb-4'>📁</div>
-                      <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400'>
-                        点击搜索按钮开始查找网盘资源
-                      </p>
-                      <button
-                        onClick={() => handleNetDiskSearch(videoTitle)}
-                        disabled={netdiskLoading}
-                        className='mt-4 px-4 sm:px-6 py-2 sm:py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base font-medium'
-                      >
-                        开始搜索
-                      </button>
-                    </div>
-                  )}
-
-                  <NetDiskSearchResults
-                    results={netdiskResults}
-                    loading={netdiskLoading}
-                    error={netdiskError}
-                    total={netdiskTotal}
-                  />
-
-                </>
-              ) : (
-                /* ACG 动漫磁力搜索 */
-                <AcgSearch
-                  keyword={videoTitle || ''}
-                  triggerSearch={acgTriggerSearch}
-                  onError={(error) => console.error('ACG搜索失败:', error)}
-                />
-              )}
-
-              {/* 返回顶部按钮 - 统一放在外层，适用于所有资源类型 */}
-              {((netdiskResourceType === 'netdisk' && netdiskTotal > 10) ||
-                (netdiskResourceType === 'acg')) && (
-                <button
-                  onClick={() => {
-                    if (netdiskModalContentRef.current) {
-                      netdiskModalContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                  }}
-                  className={`sticky bottom-6 left-full -ml-14 sm:bottom-8 sm:-ml-16 w-11 h-11 sm:w-12 sm:h-12 ${
-                    netdiskResourceType === 'acg'
-                      ? 'bg-purple-500 hover:bg-purple-600'
-                      : 'bg-blue-500 hover:bg-blue-600'
-                  } text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center active:scale-95 z-50 group`}
-                  aria-label='返回顶部'
-                >
-                  <svg className='w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-y-[-2px] transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M5 10l7-7m0 0l7 7m-7-7v18' />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 下载选集面板 */}
-      <DownloadEpisodeSelector
-      isOpen={showDownloadEpisodeSelector}
-      onClose={() => setShowDownloadEpisodeSelector(false)}
-      totalEpisodes={detail?.episodes?.length || 1}
-      episodesTitles={detail?.episodes_titles || []}
-      videoTitle={videoTitle || '视频'}
-      currentEpisodeIndex={currentEpisodeIndex}
-      onDownload={async (episodeIndexes) => {
-        if (!detail?.episodes || detail.episodes.length === 0) {
-          // 单集视频，直接下载当前
-          const currentUrl = videoUrl;
-          if (!currentUrl) {
-            alert('无法获取视频地址');
-            return;
-          }
-          if (!currentUrl.includes('.m3u8')) {
-            alert('仅支持M3U8格式视频下载');
-            return;
-          }
-          try {
-            await createTask(currentUrl, videoTitle || '视频', 'TS');
-          } catch (error) {
-            console.error('创建下载任务失败:', error);
-            alert('创建下载任务失败: ' + (error as Error).message);
-          }
-          return;
-        }
-
-        // 批量下载多集
-        for (const episodeIndex of episodeIndexes) {
-          try {
-            const episodeUrl = detail.episodes[episodeIndex];
-            if (!episodeUrl) continue;
-
-            // 检查是否是M3U8
-            if (!episodeUrl.includes('.m3u8')) {
-              console.warn(`第${episodeIndex + 1}集不是M3U8格式，跳过`);
-              continue;
-            }
-
-            const episodeName = `第${episodeIndex + 1}集`;
-            const downloadTitle = `${videoTitle || '视频'}_${episodeName}`;
-            await createTask(episodeUrl, downloadTitle, 'TS');
-          } catch (error) {
-            console.error(`创建第${episodeIndex + 1}集下载任务失败:`, error);
-          }
-        }
-      }}
-      />
-    </>
-  );
-}
-
-
-export default function PlayPage() {
-  return (
-    <>
-      <Suspense fallback={<div>Loading...</div>}>
-        <PlayPageClientWrapper />
-      </Suspense>
-    </>
-  );
-}
-
-function PlayPageClientWrapper() {
-  const searchParams = useSearchParams();
-  // 使用 source + id 作为 key，强制在切换源时重新挂载组件
-  // 参考：https://github.com/vercel/next.js/issues/2819
-  const key = `${searchParams.get('source')}-${searchParams.get('id')}-${searchParams.get('_reload') || ''}`;
-
-  return <PlayPageClient key={key} />;
-}
+                console.Sorry, something went wrong. Please try your request again.
