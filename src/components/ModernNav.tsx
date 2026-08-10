@@ -49,7 +49,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
     },
     {
       icon: Globe,
-      label: '分类',
+      label: '源库',
       href: '/source-browser',
       color: 'text-emerald-500',
       gradient: 'from-emerald-500 to-green-500',
