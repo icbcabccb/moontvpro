@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Moon, Sun } from 'lucide-react';
+import { Moon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
@@ -12,62 +12,49 @@ export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
   const pathname = usePathname();
 
-  const setThemeColor = (theme?: string) => {
+  const setThemeColor = () => {
     const meta = document.querySelector('meta[name="theme-color"]');
+    const darkColor = '#131722'; // 完美适配你全站的暗黑背景色
+    
     if (!meta) {
-      const meta = document.createElement('meta');
-      meta.name = 'theme-color';
-      meta.content = theme === 'dark' ? '#0c111c' : '#f9fbfe';
-      document.head.appendChild(meta);
+      const newMeta = document.createElement('meta');
+      newMeta.name = 'theme-color';
+      newMeta.content = darkColor;
+      document.head.appendChild(newMeta);
     } else {
-      meta.setAttribute('content', theme === 'dark' ? '#0c111c' : '#f9fbfe');
+      meta.setAttribute('content', darkColor);
     }
   };
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    setTheme('dark'); // 初始化时强制写入深色模式
+  }, [setTheme]);
 
-  // 监听主题变化和路由变化，确保主题色始终同步
+  // 监听主题和路由变化，如果发现不是暗色，立刻强制纠正
   useEffect(() => {
     if (mounted) {
-      setThemeColor(resolvedTheme);
+      setThemeColor();
+      if (resolvedTheme !== 'dark') {
+        setTheme('dark');
+      }
     }
-  }, [mounted, resolvedTheme, pathname]);
+  }, [mounted, resolvedTheme, pathname, setTheme]);
 
   if (!mounted) {
     // 渲染一个占位符以避免布局偏移
     return <div className='w-10 h-10' />;
   }
 
-  const toggleTheme = () => {
-    // 检查浏览器是否支持 View Transitions API
-    const targetTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
-    setThemeColor(targetTheme);
-    if (!(document as any).startViewTransition) {
-      setTheme(targetTheme);
-      return;
-    }
-
-    (document as any).startViewTransition(() => {
-      setTheme(targetTheme);
-    });
-  };
-
+  // 强制展示为深色模式的月亮图标，去除了点击切换功能
+  // 注：如果你觉得既然不能切换了，干脆连图标也不要显示，可以直接改成 return null;
   return (
-    <button
-      onClick={toggleTheme}
-      className='relative w-10 h-10 p-2 rounded-full flex items-center justify-center text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-amber-500/30 dark:hover:shadow-amber-400/30 group'
-      aria-label='Toggle theme'
+    <div
+      className='relative w-10 h-10 p-2 rounded-full flex items-center justify-center text-amber-500 cursor-default'
+      title='已强制开启深色模式'
+      aria-label='Dark theme enabled'
     >
-      {/* 微光背景效果 */}
-      <div className='absolute inset-0 rounded-full bg-linear-to-br from-amber-400/0 to-amber-600/0 group-hover:from-amber-400/20 group-hover:to-amber-600/20 dark:group-hover:from-amber-300/20 dark:group-hover:to-amber-500/20 transition-all duration-300'></div>
-
-      {resolvedTheme === 'dark' ? (
-        <Sun className='w-full h-full relative z-10 group-hover:rotate-180 transition-transform duration-500' />
-      ) : (
-        <Moon className='w-full h-full relative z-10 group-hover:rotate-180 transition-transform duration-500' />
-      )}
-    </button>
+      <Moon className='w-full h-full relative z-10' />
+    </div>
   );
 }
