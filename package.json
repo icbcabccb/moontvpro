@@ -36,7 +36,7 @@
     "@vidstack/react": "^1.12.13",
     "anime4k-webgpu": "^1.0.0",
     "artplayer": "^5.4.0",
-    "artplayer-plugin-danmuku": "^5.4.0",
+    "artplayer-plugin-danmuku": "^5.2.0",
     "bs58": "^6.0.0",
     "cheerio": "^1.2.0",
     "clsx": "^2.0.0",
