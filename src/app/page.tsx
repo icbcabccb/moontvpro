@@ -472,7 +472,8 @@ function HomeClient() {
 
         {/* ================== 搜索历史模块 ================== */}
         {searchHistory.length > 0 && (
-          <div className="w-full max-w-2xl px-2 sm:px-0 mx-auto mt-10 sm:mt-16 z-10 relative">
+          // 将此处的 mt-10 sm:mt-16 调小为了 mt-5 sm:mt-8
+          <div className="w-full max-w-2xl px-2 sm:px-0 mx-auto mt-5 sm:mt-8 z-10 relative">
             <section className='mb-6'>
               <div className='flex items-center justify-between mb-4'>
                 <h2 className='text-sm font-medium text-gray-400'>
@@ -520,7 +521,6 @@ function HomeClient() {
             </section>
           </div>
         )}
-      </div>
 
       {/* 底部 Footer */}
       <footer className="w-full py-6 bg-[#0a0a0a] border-t border-[#1f2937] shrink-0">
