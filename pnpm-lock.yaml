@@ -9782,7 +9782,7 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
-  hls.js@1.6.15: {}
+  hls.js@1.6.16: {}
 
   hoist-non-react-statics@3.3.2:
     dependencies:
