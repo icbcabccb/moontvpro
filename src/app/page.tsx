@@ -324,11 +324,11 @@ function HomeClient() {
         <UserMenu />
       </div>
 
-      {/* 核心搜索区域 - 垂直水平绝对居中 */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full px-4 -mt-10">
+      {/* 核心搜索区域 - 取消了负边距使其整体下移 */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full px-4">
         
-        {/* 大 Logo 区域 */}
-        <div className="flex justify-center items-center mb-10 -mt-12 sm:-mt-18">
+        {/* 大 Logo 区域 - 取消了原有的强行上提负边距，使其自然居中偏下 */}
+        <div className="flex justify-center items-center mb-10">
           <Link href="/" className="flex items-center transition-opacity hover:opacity-80 duration-300">
             {/* 青色放大镜图标，随字体比例适量调小 */}
             <svg className="w-12 h-12 md:w-16 md:h-16 mr-3 text-[#00ccff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,11 +403,9 @@ function HomeClient() {
           <div className="group flex items-center h-14 bg-[#1a1a1a] border border-[#333] hover:border-[#555] focus-within:border-[#DC143C] focus-within:shadow-[0_0_20px_rgba(220,20,60,0.15)] rounded-full transition-all duration-300 pl-1.5 pr-1.5 shadow-xl relative z-20">
             
             {/* 源库浏览标识图标 */}
-            <Link href="/source-browser" className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 hover:text-[#DC143C] shrink-0 transition-colors cursor-pointer group/link">
-              <svg className="w-5 h-5 sm:mr-1.5 group-hover/link:text-[#DC143C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              <span className="hidden sm:inline text-sm font-medium">源库浏览</span>
+            <Link href="/source-browser" className="h-11 px-3 sm:px-5 flex items-center justify-center bg-transparent text-gray-400 hover:text-[#DC143C] shrink-0 transition-colors cursor-pointer group/link" title="源库浏览">
+              <Search className="w-5 h-5 sm:mr-1.5 group-hover/link:text-[#DC143C] transition-colors" />
+              <span className="hidden sm:inline text-sm font-medium group-hover/link:text-[#DC143C] transition-colors">源库</span>
             </Link>
             
             {/* 分割线 */}
@@ -472,7 +470,6 @@ function HomeClient() {
 
         {/* ================== 搜索历史模块 ================== */}
         {searchHistory.length > 0 && (
-          // 在这里增加了顶部间距 mt-10 和大屏下的 mt-16
           <div className="w-full max-w-2xl px-2 sm:px-0 mx-auto mt-10 sm:mt-16 z-10 relative">
             <section className='mb-6'>
               <div className='flex items-center justify-between mb-4'>
