@@ -2002,7 +2002,8 @@ function PlayPageClient() {
     }
   };
 
-  // 去广告相关函数function filterAdsFromM3U8(m3u8Content: string): string {
+  // 去广告相关函数
+  function filterAdsFromM3U8(m3u8Content: string): string {
     if (!m3u8Content) return '';
 
     // 如果有自定义去广告代码，优先使用
@@ -2051,9 +2052,6 @@ function PlayPageClient() {
     while (i < lines.length) {
       const line = lines[i];
 
-      // 【核心修复 1】: 删除了原代码中跳过 #EXT-X-DISCONTINUITY 的逻辑
-      // 绝对不能删除断点标签，HLS需要它来处理时间戳(PTS)重置问题
-
       // 如果是 EXTINF 行，检查下一行 URL 是否包含广告关键字
       if (line.includes('#EXTINF:')) {
         totalSegments++;
@@ -2069,8 +2067,7 @@ function PlayPageClient() {
             // 跳过 EXTINF 行和 URL 行
             i += 2;
             
-            // 【优化】: 我们主动删除了片段，强制打上一个断点标识。
-            // 这能完美避免由于源文件广告前后缺少 DISCONTINUITY 标签导致的解码器崩溃。
+            // 主动补充断点标识
             if (filteredLines.length > 0 && filteredLines[filteredLines.length - 1] !== '#EXT-X-DISCONTINUITY') {
               filteredLines.push('#EXT-X-DISCONTINUITY');
             }
@@ -2084,15 +2081,13 @@ function PlayPageClient() {
       i++;
     }
 
-    // 【核心修复 2】: 防误杀保护机制
-    // 如果过滤了超过 90% 的片段，说明极有可能是视频 URL 路径本身命中了 '/ad/' 等关键词。
-    // 如果不恢复，播放器将读取到空列表并瞬间触发播放结束跳过整集。
+    // 防误杀保护机制
     if (totalSegments > 0 && removedSegments >= totalSegments * 0.9) {
       console.warn(`[去广告] 警告：移除了过多的片段 (${removedSegments}/${totalSegments})，疑似误杀正片，已恢复原文件。`);
-      return m3u8Content; // 遇到误杀时，原样返回防止无法播放
+      return m3u8Content; 
     }
 
-    // 【优化】: 过滤掉可能产生的连续重复的 #EXT-X-DISCONTINUITY 标签
+    // 过滤掉连续重复的 #EXT-X-DISCONTINUITY 标签
     return filteredLines.filter((line, index, arr) => {
       if (line === '#EXT-X-DISCONTINUITY' && arr[index - 1] === '#EXT-X-DISCONTINUITY') {
         return false;
@@ -3407,8 +3402,8 @@ function PlayPageClient() {
     // Chrome浏览器检测 - 只有真正的Chrome才支持Chromecast
     // 排除各种厂商浏览器，即使它们的UA包含Chrome字样
     const isChrome = /Chrome/i.test(userAgent) && 
-                    !/Edg/i.test(userAgent) &&      // 排除Edge
-                    !/OPR/i.test(userAgent) &&      // 排除Opera
+                    !/Edg/i.test(userAgent) &&     // 排除Edge
+                    !/OPR/i.test(userAgent) &&     // 排除Opera
                     !/SamsungBrowser/i.test(userAgent) && // 排除三星浏览器
                     !/OPPO/i.test(userAgent) &&     // 排除OPPO浏览器
                     !/OppoBrowser/i.test(userAgent) && // 排除OppoBrowser
@@ -4046,12 +4041,12 @@ function PlayPageClient() {
                     // 🎯 动态弹幕密度控制 - 根据当前屏幕上的弹幕数量决定是否显示
                     const currentVisibleCount = document.querySelectorAll('.art-danmuku [data-state="emit"]').length;
                     const maxConcurrentDanmu = devicePerformance === 'high' ? 60 :
-                                             devicePerformance === 'medium' ? 40 : 25;
+                                               devicePerformance === 'medium' ? 40 : 25;
 
                     if (currentVisibleCount >= maxConcurrentDanmu) {
                       // 🔥 当弹幕密度过高时，随机丢弃部分弹幕，保持流畅性
                       const dropRate = devicePerformance === 'high' ? 0.1 :
-                                      devicePerformance === 'medium' ? 0.3 : 0.5;
+                                       devicePerformance === 'medium' ? 0.3 : 0.5;
                       if (Math.random() < dropRate) {
                         resolve(false); // 丢弃当前弹幕
                         return;
@@ -4263,7 +4258,7 @@ function PlayPageClient() {
           updateResolution();
         }
 
-        // 用户交互时重新显示徽章（鼠标移动、点击、键盘操作）
+        // 用户交互时重新显示徽章（鼠标移动、点击、touchstart、键盘操作）
         const userInteractionEvents = ['mousemove', 'click', 'touchstart', 'keydown'];
         userInteractionEvents.forEach(eventName => {
           artPlayerRef.current.on(eventName, showBadge);
