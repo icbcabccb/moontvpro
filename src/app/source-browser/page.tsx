@@ -636,54 +636,6 @@ export default function SourceBrowserPage() {
           </div>
         </div>
 
-        {/* Query & Sort */}
-        {activeSource && (
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700'>
-            <div className='px-4 py-3 border-b border-gray-200 dark:border-gray-700 space-y-3'>
-              {/* 第一行：搜索框 + 清除按钮 + 模式显示 */}
-              <div className='flex items-center gap-2'>
-                <input
-                  value={query}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setQuery(val);
-                    if (debounceId) clearTimeout(debounceId);
-                    const id = setTimeout(() => {
-                      setMode(val.trim() ? 'search' : 'category');
-                      if (val.trim()) {
-                        fetchSearch(activeSourceKey, val.trim(), 1);
-                      } else if (activeCategory) {
-                        fetchItems(activeSourceKey, activeCategory, 1);
-                      }
-                    }, 500);
-                    setDebounceId(id);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setMode(query.trim() ? 'search' : 'category');
-                    }
-                  }}
-                  placeholder='输入关键词并回车进行搜索；清空回车恢复分类'
-                  className='flex-1 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm'
-                />
-                {query && (
-                  <button
-                    onClick={() => {
-                      setQuery('');
-                      setMode('category');
-                      if (activeCategory)
-                        fetchItems(activeSourceKey, activeCategory, 1);
-                    }}
-                    className='px-3 py-2 text-xs border rounded-md whitespace-nowrap hover:bg-gray-100 dark:hover:bg-gray-700'
-                    title='清除'
-                  >
-                    清除
-                  </button>
-                )}
-                <div className='hidden sm:block text-xs text-gray-500 whitespace-nowrap'>
-                  {mode === 'search' ? '搜索' : '分类'}
-                </div>
-              </div>
 
               {/* 第二行：筛选控件（移动端优化布局） */}
               <div className='grid grid-cols-2 sm:flex sm:flex-wrap gap-2'>
