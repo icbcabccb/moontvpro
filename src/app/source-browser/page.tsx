@@ -561,7 +561,7 @@ export default function SourceBrowserPage() {
             
             <div className='flex-1'>
               <h1 className='text-3xl md:text-4xl font-bold bg-linear-to-r from-emerald-600 via-green-600 to-teal-600 dark:from-emerald-400 dark:via-green-400 dark:to-teal-400 bg-clip-text text-transparent'>
-                源&分类
+                源库浏览
               </h1>
               <p className='text-sm text-gray-600 dark:text-gray-400 mt-1'>
                 按源站与分类浏览内容，探索海量影视资源。
