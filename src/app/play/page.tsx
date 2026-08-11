@@ -2002,8 +2002,7 @@ function PlayPageClient() {
     }
   };
 
-  // 去广告相关函数
-  function filterAdsFromM3U8(m3u8Content: string): string {
+  // 去广告相关函数function filterAdsFromM3U8(m3u8Content: string): string {
     if (!m3u8Content) return '';
 
     // 如果有自定义去广告代码，优先使用
@@ -2030,9 +2029,6 @@ function PlayPageClient() {
       }
     }
 
-    // 默认去广告规则
-    if (!m3u8Content) return '';
-
     // 广告关键字列表
     const adKeywords = [
       'sponsor',
@@ -2046,20 +2042,21 @@ function PlayPageClient() {
 
     // 按行分割M3U8内容
     const lines = m3u8Content.split('\n');
-    const filteredLines = [];
+    const filteredLines: string[] = [];
+    
+    let totalSegments = 0;
+    let removedSegments = 0;
 
     let i = 0;
     while (i < lines.length) {
       const line = lines[i];
 
-      // 跳过 #EXT-X-DISCONTINUITY 标识
-      if (line.includes('#EXT-X-DISCONTINUITY')) {
-        i++;
-        continue;
-      }
+      // 【核心修复 1】: 删除了原代码中跳过 #EXT-X-DISCONTINUITY 的逻辑
+      // 绝对不能删除断点标签，HLS需要它来处理时间戳(PTS)重置问题
 
       // 如果是 EXTINF 行，检查下一行 URL 是否包含广告关键字
       if (line.includes('#EXTINF:')) {
+        totalSegments++;
         // 检查下一行 URL 是否包含广告关键字
         if (i + 1 < lines.length) {
           const nextLine = lines[i + 1];
@@ -2068,8 +2065,15 @@ function PlayPageClient() {
           );
 
           if (containsAdKeyword) {
+            removedSegments++;
             // 跳过 EXTINF 行和 URL 行
             i += 2;
+            
+            // 【优化】: 我们主动删除了片段，强制打上一个断点标识。
+            // 这能完美避免由于源文件广告前后缺少 DISCONTINUITY 标签导致的解码器崩溃。
+            if (filteredLines.length > 0 && filteredLines[filteredLines.length - 1] !== '#EXT-X-DISCONTINUITY') {
+              filteredLines.push('#EXT-X-DISCONTINUITY');
+            }
             continue;
           }
         }
@@ -2080,7 +2084,21 @@ function PlayPageClient() {
       i++;
     }
 
-    return filteredLines.join('\n');
+    // 【核心修复 2】: 防误杀保护机制
+    // 如果过滤了超过 90% 的片段，说明极有可能是视频 URL 路径本身命中了 '/ad/' 等关键词。
+    // 如果不恢复，播放器将读取到空列表并瞬间触发播放结束跳过整集。
+    if (totalSegments > 0 && removedSegments >= totalSegments * 0.9) {
+      console.warn(`[去广告] 警告：移除了过多的片段 (${removedSegments}/${totalSegments})，疑似误杀正片，已恢复原文件。`);
+      return m3u8Content; // 遇到误杀时，原样返回防止无法播放
+    }
+
+    // 【优化】: 过滤掉可能产生的连续重复的 #EXT-X-DISCONTINUITY 标签
+    return filteredLines.filter((line, index, arr) => {
+      if (line === '#EXT-X-DISCONTINUITY' && arr[index - 1] === '#EXT-X-DISCONTINUITY') {
+        return false;
+      }
+      return true;
+    }).join('\n');
   }
 
   const formatTime = (seconds: number): string => {
