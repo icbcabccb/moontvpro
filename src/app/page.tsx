@@ -328,7 +328,7 @@ function HomeClient() {
       <div className="flex-1 flex flex-col items-center justify-center w-full px-4 -mt-10">
         
         {/* 大 Logo 区域 */}
-        <div className="flex justify-center items-center mb-10 -mt-16 sm:-mt-24">
+        <div className="flex justify-center items-center mb-10 -mt-12 sm:-mt-18">
           <Link href="/" className="flex items-center transition-opacity hover:opacity-80 duration-300">
             {/* 青色放大镜图标，随字体比例适量调小 */}
             <svg className="w-12 h-12 md:w-16 md:h-16 mr-3 text-[#00ccff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
