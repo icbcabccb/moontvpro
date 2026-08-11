@@ -472,7 +472,8 @@ function HomeClient() {
 
         {/* ================== 搜索历史模块 ================== */}
         {searchHistory.length > 0 && (
-          <div className="w-full max-w-2xl px-2 sm:px-0 mx-auto mt-6 z-10 relative">
+          // 在这里增加了顶部间距 mt-10 和大屏下的 mt-16
+          <div className="w-full max-w-2xl px-2 sm:px-0 mx-auto mt-10 sm:mt-16 z-10 relative">
             <section className='mb-6'>
               <div className='flex items-center justify-between mb-4'>
                 <h2 className='text-sm font-medium text-gray-400'>
@@ -498,7 +499,7 @@ function HomeClient() {
                           `/search?q=${encodeURIComponent(item.trim())}`
                         );
                       }}
-                      className='px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded-full text-xs text-gray-300 hover:text-white transition-colors duration-200 shadow-md'
+                      className='px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] rounded-full text-xs text-gray-300 hover:text-white transition-colors duration-200 shadow-md'
                     >
                       {item}
                     </button>
