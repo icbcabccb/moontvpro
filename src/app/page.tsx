@@ -342,58 +342,58 @@ function HomeClient() {
         </div>
 
         {/* ================== 首页分类快捷按钮组 ================== */}
-        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 mb-8 max-w-3xl mx-auto">
+        <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 mb-8 max-w-3xl mx-auto">
           {/* 电影 */}
           <Link
             href="/douban?type=movie"
-            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex flex-col items-center gap-1.5 p-2 text-gray-400 hover:text-[#DC143C] transition-all duration-300"
           >
-            <Film className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <Film className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span className="text-xs sm:text-sm font-medium tracking-wide">电影</span>
           </Link>
 
           {/* 剧集 */}
           <Link
             href="/douban?type=tv"
-            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex flex-col items-center gap-1.5 p-2 text-gray-400 hover:text-[#DC143C] transition-all duration-300"
           >
-            <Tv className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <Tv className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span className="text-xs sm:text-sm font-medium tracking-wide">剧集</span>
           </Link>
 
           {/* 短剧 */}
           <Link
             href="/shortdrama"
-            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex flex-col items-center gap-1.5 p-2 text-gray-400 hover:text-[#DC143C] transition-all duration-300"
           >
-            <PlaySquare className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <PlaySquare className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span className="text-xs sm:text-sm font-medium tracking-wide">短剧</span>
           </Link>
 
           {/* 动漫 */}
           <Link
             href="/douban?type=anime"
-            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex flex-col items-center gap-1.5 p-2 text-gray-400 hover:text-[#DC143C] transition-all duration-300"
           >
-            <Cat className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <Cat className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span className="text-xs sm:text-sm font-medium tracking-wide">动漫</span>
           </Link>
 
           {/* 综艺 */}
           <Link
             href="/douban?type=show"
-            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex flex-col items-center gap-1.5 p-2 text-gray-400 hover:text-[#DC143C] transition-all duration-300"
           >
-            <Clover className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <Clover className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span className="text-xs sm:text-sm font-medium tracking-wide">综艺</span>
           </Link>
 
           {/* 直播 */}
           <Link
             href="/live"
-            className="group flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
+            className="group flex flex-col items-center gap-1.5 p-2 text-gray-400 hover:text-[#DC143C] transition-all duration-300"
           >
-            <Radio className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+            <Radio className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span className="text-xs sm:text-sm font-medium tracking-wide">直播</span>
           </Link>
         </div>
