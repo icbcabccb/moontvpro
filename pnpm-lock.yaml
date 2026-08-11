@@ -57,8 +57,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(@webgpu/types@0.1.68)
       artplayer:
-        specifier: ^5.3.0
-        version: 5.3.0
+        specifier: ^5.4.0
+        version: 5.4.0
       artplayer-plugin-danmuku:
         specifier: ^5.2.0
         version: 5.2.0
@@ -81,8 +81,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       hls.js:
-        specifier: ^1.6.15
-        version: 1.6.15
+        specifier: ^1.6.17
+        version: 1.6.17
       lucide-react:
         specifier: ^0.438.0
         version: 0.438.0(react@19.2.3)
@@ -2439,8 +2439,8 @@ packages:
   artplayer-plugin-danmuku@5.2.0:
     resolution: {integrity: sha512-iHHSGEc0J+gl7imX4nmLqqC7LXmv8xeGf2lUevhhyUCoiCRZplecpKQICHjErVb1Yqyp1xCy6Sp8eYN+EpFWFw==}
 
-  artplayer@5.3.0:
-    resolution: {integrity: sha512-yExO39MpEg4P+bxgChxx1eJfiUPE4q1QQRLCmqGhlsj+ANuaoEkR8hF93LdI5ZyrAcIbJkuEndxEiUoKobifDw==}
+  artplayer@5.4.0:
+    resolution: {integrity: sha512-2B+plbx8N2yNsjK4nJU3+EOG8TULm1LRZk/QPkWRAMEX2Ee/MSnZG/WJYz8kcoZxZuLKcQ3uXifqLuPxZOH29A==}
 
   assert@2.0.0:
     resolution: {integrity: sha512-se5Cd+js9dXJnu6Ag2JFc00t+HmHOen+8Q+L7O9zI0PqQXr20uk2J0XQqMxZEeo5U50o8Nvmmx7dZrl+Ufr35A==}
@@ -3592,8 +3592,8 @@ packages:
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
-  hls.js@1.6.15:
-    resolution: {integrity: sha512-E3a5VwgXimGHwpRGV+WxRTKeSp2DW5DI5MWv34ulL3t5UNmyJWCQ1KmLEHbYzcfThfXG8amBL+fCYPneGHC4VA==}
+  hls.js@1.6.17:
+    resolution: {integrity: sha512-NUplVGVuc1hSPwdB/9/cbRkUmLrYi75/hqiXKdA+l300pJNxDu96R7jRb2imDzWJqIUF4I5ThmAdp9GvOCXsuQ==}
 
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
@@ -8447,7 +8447,7 @@ snapshots:
 
   artplayer-plugin-danmuku@5.2.0: {}
 
-  artplayer@5.3.0:
+  artplayer@5.4.0:
     dependencies:
       option-validator: 2.0.6
 
@@ -9782,7 +9782,7 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
-  hls.js@1.6.15: {}
+  hls.js@1.6.17: {}
 
   hoist-non-react-statics@3.3.2:
     dependencies:
