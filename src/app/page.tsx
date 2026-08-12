@@ -547,6 +547,7 @@ function HomeClient() {
                 <a href="https://timis.dpdns.org" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">API中转服务</a>
                 <a href="https://ctv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">RedMoon-CTV</a>
                 <a href="https://sync.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">RedMoon-VTV</a>
+                <a href="https://rtv.400821.xyz" target="_blank" rel="noopener noreferrer" className="text-[#60a5fa] hover:text-[#93c5fd] text-sm transition-colors">RedMoon-RTV</a>
               </div>
             </div>
           </div>
