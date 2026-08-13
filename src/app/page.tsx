@@ -313,6 +313,8 @@ function HomeClient() {
           onClick={() => setShowUpcomingModal(true)}
           className="group flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#DC143C] text-gray-400 hover:text-[#DC143C] rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_15px_rgba(220,20,60,0.2)]"
         >
+          <Calendar className="w-4 h-4 group-hover:text-[#DC143C] transition-colors" />
+          <span className="text-xs sm:text-sm font-medium tracking-wide hidden sm:inline">即将上映</span>
         </button>
       </div>
 
@@ -852,8 +854,8 @@ function HomeClient() {
                  </div>
               ) : !isUpcomingLoading && upcomingReleases.length > 0 && (
                 <section className='mb-8'>
-                  <div className='mb-4 flex items-center justify-between'>
-                    <SectionTitle title="即将上映" icon={Calendar} iconColor="text-[#DC143C]" />
+                  {/* 此处移除了 SectionTitle，并将 justify-between 改为了 justify-end */}
+                  <div className='mb-4 flex items-center justify-end'>
                     <Link
                       href='/release-calendar'
                       className='flex items-center text-sm text-gray-400 hover:text-[#DC143C] transition-colors'
