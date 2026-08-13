@@ -854,45 +854,50 @@ function HomeClient() {
                  </div>
               ) : !isUpcomingLoading && upcomingReleases.length > 0 && (
                 <section className='mb-8'>
-                  {/* 此处移除了 SectionTitle，并将 justify-between 改为了 justify-end */}
-                  <div className='mb-4 flex items-center justify-end'>
+                  
+                  {/* 将分类 Tab 和 查看更多 合并到同一行 */}
+                  <div className='mb-4 flex flex-wrap items-center justify-between gap-4'>
+                    
+                    {/* Tab 切换 (居左) */}
+                    <div className='flex gap-2'>
+                      {[
+                        { key: 'all', label: '全部', count: upcomingReleases.length },
+                        { key: 'movie', label: '电影', count: upcomingReleases.filter(r => r.type === 'movie').length },
+                        { key: 'tv', label: '电视剧', count: upcomingReleases.filter(r => r.type === 'tv').length },
+                      ].map(({ key, label, count }) => (
+                        <button
+                          key={key}
+                          onClick={() => setUpcomingFilter(key as 'all' | 'movie' | 'tv')}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
+                            upcomingFilter === key
+                              ? 'bg-[#DC143C] border-[#DC143C] text-white shadow-[0_0_10px_rgba(220,20,60,0.3)]'
+                              : 'bg-[#1a1a1a] border-[#333] text-gray-400 hover:bg-[#222] hover:text-gray-200'
+                          }`}
+                        >
+                          {label}
+                          {count > 0 && (
+                            <span className={`ml-1.5 text-xs ${
+                              upcomingFilter === key ? 'text-white/80' : 'text-gray-500'
+                            }`}>
+                              ({count})
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* 查看更多按钮 (居右) */}
                     <Link
                       href='/release-calendar'
-                      className='flex items-center text-sm text-gray-400 hover:text-[#DC143C] transition-colors'
+                      className='flex items-center text-sm text-gray-400 hover:text-[#DC143C] transition-colors shrink-0'
                     >
                       查看更多
                       <ChevronRight className='w-4 h-4 ml-1' />
                     </Link>
+                    
                   </div>
 
-                  {/* Tab 切换 */}
-                  <div className='mb-4 flex gap-2'>
-                    {[
-                      { key: 'all', label: '全部', count: upcomingReleases.length },
-                      { key: 'movie', label: '电影', count: upcomingReleases.filter(r => r.type === 'movie').length },
-                      { key: 'tv', label: '电视剧', count: upcomingReleases.filter(r => r.type === 'tv').length },
-                    ].map(({ key, label, count }) => (
-                      <button
-                        key={key}
-                        onClick={() => setUpcomingFilter(key as 'all' | 'movie' | 'tv')}
-                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
-                          upcomingFilter === key
-                            ? 'bg-[#DC143C] border-[#DC143C] text-white shadow-[0_0_10px_rgba(220,20,60,0.3)]'
-                            : 'bg-[#1a1a1a] border-[#333] text-gray-400 hover:bg-[#222] hover:text-gray-200'
-                        }`}
-                      >
-                        {label}
-                        {count > 0 && (
-                          <span className={`ml-1.5 text-xs ${
-                            upcomingFilter === key ? 'text-white/80' : 'text-gray-500'
-                          }`}>
-                            ({count})
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
+                  {/* 横向滚动列表 */}
                   <ScrollableRow enableVirtualization={true}>
                     {upcomingReleases
                       .filter(release => upcomingFilter === 'all' || release.type === upcomingFilter)
