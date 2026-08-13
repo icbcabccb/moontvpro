@@ -584,21 +584,7 @@ function HomeClient() {
               </div>
 
               <div className="flex items-center gap-3">
-                {modalTab === 'favorites' && favoriteItems.length > 0 && (
-                  <button
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#DC143C] hover:text-white hover:bg-[#DC143C] border border-[#DC143C] rounded-lg transition-all duration-200"
-                    onClick={() => {
-                      if (requireClearConfirmation) {
-                        setShowClearFavoritesDialog(true);
-                      } else {
-                        handleClearFavorites();
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">清空收藏</span>
-                  </button>
-                )}
+                {/* 清空收藏按钮已从这里移除 */}
                 <button
                   onClick={() => setShowFavoritesModal(false)}
                   className="p-2 text-gray-400 hover:text-white hover:bg-[#333] rounded-xl transition-colors"
@@ -614,32 +600,53 @@ function HomeClient() {
               {modalTab === 'favorites' ? (
                 <>
                   {/* 收藏夹内容 */}
-                  {/* 统计信息 */}
-                  {favoriteStats && (
-                    <div className='mb-5 flex flex-wrap gap-2 text-sm text-gray-400'>
-                      <span className='px-3 py-1 bg-[#222] border border-[#333] rounded-full text-gray-300'>
-                        共 <strong className='text-white'>{favoriteStats.total}</strong> 项
-                      </span>
-                      {favoriteStats.movie > 0 && (
-                        <span className='px-3 py-1 bg-[#222] border border-[#333] text-blue-400 rounded-full'>
-                          电影 {favoriteStats.movie}
-                        </span>
+                  
+                  {/* 顶部操作区：统计信息与清空按钮 */}
+                  {favoriteItems.length > 0 && (
+                    <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+                      {/* 统计信息 */}
+                      {favoriteStats && (
+                        <div className='flex flex-wrap gap-2 text-sm text-gray-400'>
+                          <span className='px-3 py-1 bg-[#222] border border-[#333] rounded-full text-gray-300'>
+                            共 <strong className='text-white'>{favoriteStats.total}</strong> 项
+                          </span>
+                          {favoriteStats.movie > 0 && (
+                            <span className='px-3 py-1 bg-[#222] border border-[#333] text-blue-400 rounded-full'>
+                              电影 {favoriteStats.movie}
+                            </span>
+                          )}
+                          {favoriteStats.tv > 0 && (
+                            <span className='px-3 py-1 bg-[#222] border border-[#333] text-purple-400 rounded-full'>
+                              剧集 {favoriteStats.tv}
+                            </span>
+                          )}
+                          {favoriteStats.anime > 0 && (
+                            <span className='px-3 py-1 bg-[#222] border border-[#333] text-pink-400 rounded-full'>
+                              动漫 {favoriteStats.anime}
+                            </span>
+                          )}
+                          {favoriteStats.shortdrama > 0 && (
+                            <span className='px-3 py-1 bg-[#222] border border-[#333] text-orange-400 rounded-full'>
+                              短剧 {favoriteStats.shortdrama}
+                            </span>
+                          )}
+                        </div>
                       )}
-                      {favoriteStats.tv > 0 && (
-                        <span className='px-3 py-1 bg-[#222] border border-[#333] text-purple-400 rounded-full'>
-                          剧集 {favoriteStats.tv}
-                        </span>
-                      )}
-                      {favoriteStats.anime > 0 && (
-                        <span className='px-3 py-1 bg-[#222] border border-[#333] text-pink-400 rounded-full'>
-                          动漫 {favoriteStats.anime}
-                        </span>
-                      )}
-                      {favoriteStats.shortdrama > 0 && (
-                        <span className='px-3 py-1 bg-[#222] border border-[#333] text-orange-400 rounded-full'>
-                          短剧 {favoriteStats.shortdrama}
-                        </span>
-                      )}
+
+                      {/* 清空收藏按钮 (移至此处) */}
+                      <button
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#DC143C] hover:text-white hover:bg-[#DC143C] border border-[#DC143C] rounded-lg transition-all duration-200"
+                        onClick={() => {
+                          if (requireClearConfirmation) {
+                            setShowClearFavoritesDialog(true);
+                          } else {
+                            handleClearFavorites();
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">清空收藏</span>
+                      </button>
                     </div>
                   )}
 
